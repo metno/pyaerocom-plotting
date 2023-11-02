@@ -43,3 +43,23 @@ warn_unreachable = true
 show_error_codes = true
 pretty = true
 sqlite_cache = true
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py39, py310, py311, format, lint
+skip_missing_interpreters = True
+isolated_build = True
+
+[testenv:format]
+commands =
+    pre-commit run --all-files --show-diff-on-failure
+deps =
+    pre-commit
+
+[testenv:lint]
+commands =
+    mypy .
+depends =
+    mypy>=0.981
+"""
