@@ -10,6 +10,7 @@ from pathlib import Path
 from tempfile import mkdtemp
 
 from pyaerocom_plotting.const import DEFAULT_OUTPUT_DIR, PLOT_NAMES
+from pyaerocom_plotting.plotting import Plotting
 
 
 def main():
@@ -104,6 +105,8 @@ def main():
     model_obj = {}
     model_data = {}
 
+    plot_obj = Plotting()
+
     for _model in options["models"]:
         try:
             model_obj[_model] = pio.ReadGridded(_model)
@@ -114,16 +117,17 @@ def main():
         model_data[_model] = {}
         for _var in options["vars"]:
             try:
-                model_data[_model][_var] = model_obj[_model].read_var(
+                plot_obj.add_model_data(model=_model, var_name=_var, data=model_obj[_model].read_var(
                     var_name=_var,
                     start=int(options["startyear"]),
                     stop=int(options["endyear"]),
                     ts_type="daily",
-                )
+                ))
             except VarNotAvailableError:
                 print(
                     "Error: variable {_var} not available in files and can also not be computed. Skipping..."
                 )
+
 
     for _model in options["models"]:
         for _var in options["vars"]:
