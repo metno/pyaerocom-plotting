@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from tempfile import mkdtemp
 
-from pyaerocom_plotting.const import DEFAULT_OUTPUT_DIR
+from pyaerocom_plotting.const import DEFAULT_OUTPUT_DIR, PLOT_NAMES
 
 
 def main():
@@ -30,15 +30,26 @@ def main():
     parser = argparse.ArgumentParser(
         description="create plots with Met Norway's pyaerocom package",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=f"""{colors['BOLD']}Example usages:{colors['END']}""",
+        epilog=f"""{colors['BOLD']}Example usages:{colors['END']}
+\t{colors['UNDERLINE']}- basic usage:{colors['END']}
+\t  The following line plots the pixelmap for the model {colors['BOLD']}ECMWF_CAMS_REAN{colors['END']} for the year {colors['BOLD']}2019{colors['END']} for the variable {colors['BOLD']}od550aer{colors['END']}
+\t  pyaerocom_plot -p pixelmap -m ECMWF_CAMS_REAN -s 2019 -v od550aer
+
+""",
     )
     parser.add_argument("-m", "--models", help="models(s) to read", nargs="+")
+    parser.add_argument("-p", "--plottype", help="plot type(s) to plot", nargs="+")
+    parser.add_argument(
+        "-l", "--list", help="list supported plot types", action="store_true"
+    )
     parser.add_argument(
         "-s",
         "--startyear",
         help="startyear to read",
     )
-    parser.add_argument("-e", "--endyear", help="endyear to read; ", nargs="?")
+    parser.add_argument(
+        "-e", "--endyear", help="endyear to read; defaults to startyear.", nargs="?"
+    )
     parser.add_argument("-v", "--variables", help="variable(s) to read", nargs="+")
     parser.add_argument(
         "-o",
@@ -51,6 +62,15 @@ def main():
     options = {}
     if args.models:
         options["models"] = args.models
+
+    if args.plottype:
+        options["plottype"] = args.plottype
+
+    if args.list:
+        print(f"supported plottypes are:")
+        for t in PLOT_NAMES:
+            print(f"\t- {t}")
+        sys.exit(0)
 
     if args.startyear:
         options["startyear"] = int(args.startyear)
@@ -74,15 +94,22 @@ def main():
     if "vars" not in options:
         print("var error")
         sys.exit(3)
+    if "plottype" not in options:
+        print("plottype error")
+        sys.exit(4)
 
     import pyaerocom.io as pio
-    from pyaerocom.exceptions import VarNotAvailableError
+    from pyaerocom.exceptions import VarNotAvailableError, DataSearchError
 
     model_obj = {}
     model_data = {}
 
     for _model in options["models"]:
-        model_obj[_model] = pio.ReadGridded(_model)
+        try:
+            model_obj[_model] = pio.ReadGridded(_model)
+        except DataSearchError:
+            print(f"No model match found for model {_model}. Continuing...")
+            continue
 
         model_data[_model] = {}
         for _var in options["vars"]:

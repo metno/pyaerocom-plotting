@@ -17,3 +17,5 @@ TMP_DIR = "/tmp"
 RUN_UUID = uuid4()
 RND = randint(0, 1e9)
 DEFAULT_OUTPUT_DIR = "."
+
+PLOT_NAMES = ["pixelmap", ]
