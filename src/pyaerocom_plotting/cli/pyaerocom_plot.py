@@ -99,7 +99,7 @@ def main():
         sys.exit(4)
 
     import pyaerocom.io as pio
-    from pyaerocom.exceptions import VarNotAvailableError, DataSearchError
+    from pyaerocom.exceptions import DataSearchError, VarNotAvailableError
 
     model_obj = {}
     model_data = {}
