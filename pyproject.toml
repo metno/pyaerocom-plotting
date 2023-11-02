@@ -28,7 +28,10 @@ dependencies = ["pyaerocom"]
 "Bug Tracker" = "https://github.com/metno/pyaerocom-plotting/issues"
 
 [project.scripts]
-pyerocom_plot = "pyaerocom_plotting.cli.pyaerocom_plot:main"
+pyaerocom_plot = "pyaerocom_plotting.cli.pyaerocom_plot:main"
+
+[project.entry-points."pyaerocom_plotting"]
+const = "pyaerocom_plotting.const:"
 
 [tool.mypy]
 python_version = "3.9"
@@ -40,49 +43,3 @@ warn_unreachable = true
 show_error_codes = true
 pretty = true
 sqlite_cache = true
-
-
-
-
-
-
-
-
-
-
-
-[tool.mypy]
-python_version = "3.8"
-warn_unused_configs = true
-warn_unused_ignores = true
-warn_no_return = true
-warn_return_any = false
-warn_unreachable = true
-show_error_codes = true
-pretty = true
-sqlite_cache = true
-#exclude = "pyaerocom-tutorials|_build"
-
-[[tool.mypy.overrides]]
-module = ["pyaerocom.*"]
-warn_unused_ignores = false
-
-[tool.tox]
-legacy_tox_ini = """
-[tox]
-envlist = py38, py39, py310, format, lint
-skip_missing_interpreters = True
-isolated_build = True
-
-[testenv:format]
-commands =
-    pre-commit run --all-files --show-diff-on-failure
-deps =
-    pre-commit
-
-[testenv:lint]
-commands =
-    mypy .
-depends = 
-    mypy>=0.981
-"""
