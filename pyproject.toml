@@ -30,9 +30,6 @@ dependencies = ["pyaerocom"]
 [project.scripts]
 pyaerocom_plot = "pyaerocom_plotting.cli.pyaerocom_plot:main"
 
-[project.entry-points."pyaerocom_plotting"]
-const = "pyaerocom_plotting.const:"
-
 [tool.mypy]
 python_version = "3.9"
 warn_unused_configs = true
