@@ -1,2 +1,1 @@
-from . import const
-from . import plotting
+from . import const, plotting

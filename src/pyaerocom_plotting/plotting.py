@@ -1,4 +1,6 @@
 from pyaerocom.griddeddata import GriddedData
+
+
 class Plotting:
     """plotting class with methods for each supported plot"""
 
@@ -16,8 +18,6 @@ class Plotting:
             self.plotdata[model] = {}
         self.plotdata[model][var_name] = data
 
-
-
     # @property
     # def models(self):
     #     return self.models
@@ -25,9 +25,6 @@ class Plotting:
     # @models.setter
     # def models(self, val: str):
     #     self.models[val] = {}
-
-
-
 
     def plot_pixel_map(self, plotdata):
         """method to plot pixelmaps"""

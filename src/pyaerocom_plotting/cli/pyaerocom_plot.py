@@ -117,17 +117,20 @@ def main():
         model_data[_model] = {}
         for _var in options["vars"]:
             try:
-                plot_obj.add_model_data(model=_model, var_name=_var, data=model_obj[_model].read_var(
+                plot_obj.add_model_data(
+                    model=_model,
                     var_name=_var,
-                    start=int(options["startyear"]),
-                    stop=int(options["endyear"]),
-                    ts_type="daily",
-                ))
+                    data=model_obj[_model].read_var(
+                        var_name=_var,
+                        start=int(options["startyear"]),
+                        stop=int(options["endyear"]),
+                        ts_type="daily",
+                    ),
+                )
             except VarNotAvailableError:
                 print(
                     "Error: variable {_var} not available in files and can also not be computed. Skipping..."
                 )
-
 
     for _model in options["models"]:
         for _var in options["vars"]:
