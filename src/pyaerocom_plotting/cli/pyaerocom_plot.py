@@ -110,7 +110,8 @@ def main():
         sys.exit(4)
 
     # start plotting by loop through the supplied plot types
-    # OBS: depending on the plottype the reading class has to be called
+    # OBS: depending on the plottype the corresponding reading class has to be called
+    # e.g. pya_read for reading model data via pyaerocom
     for _ptype in PLOT_NAMES:
         if _ptype in options["plottype"]:
             model_data = pya_read(options=options)
@@ -118,14 +119,6 @@ def main():
             plt_obj.plot_pixel_map(model_data)
         else:
             print(f"plottype {_ptype} unknown. Skipping...")
-
-    # for _model in model_data.models:
-    #     for _var in model_data.variables:
-    #         try:
-    #             print(model_data.data[_model][_var])
-    #         except KeyError:
-    #             print(f"Error var {_var} not found in model {_model}")
-    #             pass
 
 
 def pya_read(options: dict) -> PyaModelData:

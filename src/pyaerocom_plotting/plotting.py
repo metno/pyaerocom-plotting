@@ -41,7 +41,7 @@ class Plotting:
                 # loop through the resulting time steps
                 for _idx in range(mdata[_model][_var]["time"].points.size):
                     ts_data = mdata[_model][_var][_idx]
-                    filename = f"{self._plotdir}/pixelmap_{_model}_{_var}_m{_idx+1:02}_{ts_type}.png"
+                    filename = f"{self._plotdir}/pixelmap_{_model}_{_var}_m{ts_data['time'].cell(0).point.month:02}{ts_data['time'].cell(0).point.year}_{ts_type}.png"
                     qplt.pcolormesh(ts_data.cube)
                     plt.gca().coastlines()
                     print(f"saving file: {filename}")
