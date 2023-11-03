@@ -12,7 +12,7 @@ import pyaerocom.io as pio
 from pyaerocom.exceptions import DataSearchError, VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 
-from pyaerocom_plotting.const import (DEFAULT_TS_TYPE)
+from pyaerocom_plotting.const import DEFAULT_TS_TYPE
 
 
 class PyaModelData:
