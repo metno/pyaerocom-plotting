@@ -1,4 +1,4 @@
-from pyaerocom.griddeddata import GriddedData
+from pathlib import Path
 
 from pyaerocom_plotting.readers import PyaModelData
 
@@ -6,71 +6,48 @@ from pyaerocom_plotting.readers import PyaModelData
 class Plotting:
     """plotting class with methods for each supported plot"""
 
-    __version__ = "0.0.1"
+    __version__ = "0.0.2"
+    DEFAULT_DPI = 300
 
-    def __init__(self, plotdata: PyaModelData):
-        self._models = []
-        self._vars = []
-        self._plotdata = plotdata
-
-    @property
-    def plotdata(self):
-        """plotdata"""
-        return self._plotdata
-
-    @plotdata.setter
-    def plotdata(self, val: GriddedData):
-        model = val.data_id
-        var = val.var_name
-        self._plotdata[model] = {}
-        self._plotdata[model][var] = val
-
-    def add_model_data(self, model: str, var_name: str, data: GriddedData):
-        self._models.append(model)
-        self._vars.append(var_name)
-        if not model in self.plotdata:
-            self._plotdata[model] = {}
-        self._plotdata[model][var_name] = data
-
-    @property
-    def models(self):
-        return self._models
-
-    @models.setter
-    def models(self, val: str):
-        self._models.append(val)
-
-    @property
-    def variables(self):
-        return self._vars
-
-    @models.setter
-    def variables(self, val: str):
-        self._vars.append(val)
+    def __init__(self, plotdir: [str, Path]):
+        self._plotdir = plotdir
 
     def plot_pixel_map(
         self,
+        model_obj: PyaModelData,
     ):
         """method to plot pixelmaps
 
         due to lack of pyaerocom API documentation this uses the iris infrastructure which is also
         retained in pyaerocom's GriddedData object
         """
+
         import iris
         import iris.analysis.cartography
         import iris.plot as iplt
         import iris.quickplot as qplt
         import matplotlib.pyplot as plt
 
-        for _model in self.models:
-            for _var in self.variables:
-                print(self.plotdata[_model][_var].cube.var_name)
-                self.plotdata[_model][_var].cube.coord("latitude").guess_bounds()
-                self.plotdata[_model][_var].cube.coord("longitude").guess_bounds()
-                weights = iris.analysis.cartography.area_weights(
-                    self.plotdata[_model][_var].cube
+        # this will be a monthly plot for now
+        # create monthly plot data
+        mdata = {}
+        ts_type = "monthly"
+        for _model in model_obj.models:
+            mdata[_model] = {}
+            for _var in model_obj.variables:
+                mdata[_model][_var] = model_obj.data[_model][_var].resample_time(
+                    ts_type
                 )
-                self.plotdata[_model][_var].cube.coord("longitude").guess_bounds()
+                # loop through the resulting time steps
+                for _idx in range(mdata[_model][_var]["time"].points.size):
+                    ts_data = mdata[_model][_var][_idx]
+                    filename = f"{self._plotdir}/pixelmap_{_model}_{_var}_m{_idx+1:02}_{ts_type}.png"
+                    qplt.pcolormesh(ts_data.cube)
+                    plt.gca().coastlines()
+                    print(f"saving file: {filename}")
+                    plt.savefig(filename, dpi=self.DEFAULT_DPI)
+                    plt.close()
 
-    def plot_weighted_means(self, plotdata):
+    def plot_weighted_means(self, model_obj: PyaModelData):
         """method to plot weighted means"""
+        pass

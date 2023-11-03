@@ -28,6 +28,21 @@ class PyaModelData:
         self._data = {}
         self._model_obj = {}
 
+    def __getitem__(self, item):
+        """x.__getitem__(y) <==> x[y]"""
+        if len(item) == 1:
+            model = item
+            if model in self._data:
+                return self._data[model]
+            # else:
+            #     raise NameError
+        elif len(item) == 2:
+            model, var = item
+            if model in self._data:
+                return self._data[model][var]
+        else:
+            pass
+
     def read(
         self,
         model: str,
@@ -45,14 +60,21 @@ class PyaModelData:
                 return
 
             self._data[model] = {}
+            self._models.append(model)
             for _var in vars:
                 try:
-                    self._data[model][_var] = self._model_obj[model].read_var(
+                    dummy = self._model_obj[model].read_var(
                         var_name=_var,
                         start=startyear,
                         stop=endyear,
                         ts_type=ts_type,
                     )
+                    # not entirely sure why this necessary
+                    self._data[model][_var] = dummy
+                    self._vars.append(_var)
+                    # unique listy of variables
+                    self._vars = list(set(self._vars))
+
                 except VarNotAvailableError:
                     print(
                         "Error: variable {_var} not available in files and can also not be computed. Skipping..."

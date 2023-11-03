@@ -71,6 +71,9 @@ def main():
     if args.models:
         options["models"] = args.models
 
+    if args.outdir:
+        options["outdir"] = args.outdir
+
     if args.plottype:
         options["plottype"] = args.plottype
 
@@ -111,8 +114,8 @@ def main():
     for _ptype in PLOT_NAMES:
         if _ptype in options["plottype"]:
             model_data = pya_read(options=options)
-            plt_obj = Plotting(model_data)
-            plt_obj.plot_pixel_map()
+            plt_obj = Plotting(plotdir=options["outdir"])
+            plt_obj.plot_pixel_map(model_data)
         else:
             print(f"plottype {_ptype} unknown. Skipping...")
 
