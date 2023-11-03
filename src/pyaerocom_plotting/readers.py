@@ -5,7 +5,6 @@ besides the current PyaModelData class there will be classes to read
 - colocated data (netcdf files)
 - aeroval json files
 """
-from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -13,8 +12,7 @@ import pyaerocom.io as pio
 from pyaerocom.exceptions import DataSearchError, VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 
-from pyaerocom_plotting.const import (DEFAULT_OUTPUT_DIR, DEFAULT_TS_TYPE,
-                                      PLOT_NAMES)
+from pyaerocom_plotting.const import (DEFAULT_TS_TYPE)
 
 
 class PyaModelData:
