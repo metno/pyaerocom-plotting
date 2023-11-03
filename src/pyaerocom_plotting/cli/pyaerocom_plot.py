@@ -9,8 +9,10 @@ import sys
 from pathlib import Path
 from tempfile import mkdtemp
 
-from pyaerocom_plotting.const import DEFAULT_OUTPUT_DIR, PLOT_NAMES
+from pyaerocom_plotting.const import (DEFAULT_OUTPUT_DIR, DEFAULT_TS_TYPE,
+                                      PLOT_NAMES)
 from pyaerocom_plotting.plotting import Plotting
+from pyaerocom_plotting.readers import PyaModelData
 
 
 def main():
@@ -52,6 +54,11 @@ def main():
         "-e", "--endyear", help="endyear to read; defaults to startyear.", nargs="?"
     )
     parser.add_argument("-v", "--variables", help="variable(s) to read", nargs="+")
+    parser.add_argument(
+        "--tstype",
+        help=f"tstype to read; defaults to {colors['BOLD']}{DEFAULT_TS_TYPE}{colors['END']}",
+        nargs="?",
+    )
     parser.add_argument(
         "-o",
         "--outdir",
@@ -99,44 +106,18 @@ def main():
         print("plottype error")
         sys.exit(4)
 
-    import pyaerocom.io as pio
-    from pyaerocom.exceptions import DataSearchError, VarNotAvailableError
-
-    model_obj = {}
-    model_data = {}
-
-    plot_obj = Plotting()
-
+    model_data = PyaModelData()
     for _model in options["models"]:
-        try:
-            model_obj[_model] = pio.ReadGridded(_model)
-        except DataSearchError:
-            print(f"No model match found for model {_model}. Continuing...")
-            continue
+        model_data.read(
+            _model, options["vars"], options["startyear"], options["endyear"]
+        )
 
-        model_data[_model] = {}
-        for _var in options["vars"]:
+    for _model in model_data.models:
+        for _var in model_data.variables:
             try:
-                plot_obj.add_model_data(
-                    model=_model,
-                    var_name=_var,
-                    data=model_obj[_model].read_var(
-                        var_name=_var,
-                        start=int(options["startyear"]),
-                        stop=int(options["endyear"]),
-                        ts_type="daily",
-                    ),
-                )
-            except VarNotAvailableError:
-                print(
-                    "Error: variable {_var} not available in files and can also not be computed. Skipping..."
-                )
-
-    for _model in options["models"]:
-        for _var in options["vars"]:
-            try:
-                print(model_data[_model][_var])
+                print(model_data.data[_model][_var])
             except KeyError:
+                print(f"Error var {_var} not found in model {_model}")
                 pass
 
 

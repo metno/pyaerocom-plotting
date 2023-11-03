@@ -1,15 +1,17 @@
 from pyaerocom.griddeddata import GriddedData
 
+from pyaerocom_plotting.readers import PyaModelData
+
 
 class Plotting:
     """plotting class with methods for each supported plot"""
 
     __version__ = "0.0.1"
 
-    def __init__(self):
+    def __init__(self, plotdata: PyaModelData):
         self._models = []
         self._vars = []
-        self._plotdata = {}
+        self._plotdata = plotdata
 
     @property
     def plotdata(self):

@@ -21,3 +21,5 @@ DEFAULT_OUTPUT_DIR = "."
 PLOT_NAMES = [
     "pixelmap",
 ]
+
+DEFAULT_TS_TYPE = "daily"
