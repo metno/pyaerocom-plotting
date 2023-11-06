@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pyaerocom_plotting.readers import PyaModelData
+from pyaerocom_plotting.readers import PyaModelData, AerovalJsonData
 
 
 class Plotting:
@@ -50,4 +50,9 @@ class Plotting:
 
     def plot_weighted_means(self, model_obj: PyaModelData):
         """method to plot weighted means"""
+        pass
+
+    def plot_aeroval_overall_time_series(self, jsondata: AerovalJsonData):
+        """method to plot the time series plot from aeroval's overall evaluation"""
+
         pass

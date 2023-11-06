@@ -2,7 +2,7 @@
 command line tool that uses pyaerocom to create plots
 
 ## Installation
-Standard installation is done via pip:
+Standard user installation is done via pip:
 
 ```bash
 python -m pip install 'git+https://github.com/metno/pyaerocom-plotting.git'
@@ -12,6 +12,12 @@ For a different branch than main
 ```bash
 python -m pip install 'git+https://github.com/metno/pyaerocom-plotting.git@<branch name>'
 ```
+
+for development:
+```bash
+pip install --no-deps -e <source directory>
+```
+
 
 ## Help
 usage:  

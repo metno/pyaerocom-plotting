@@ -13,6 +13,7 @@ from pyaerocom.exceptions import DataSearchError, VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 
 from pyaerocom_plotting.const import DEFAULT_TS_TYPE
+import simplejson as json
 
 
 class PyaModelData:
@@ -125,4 +126,64 @@ class PyaColocatedData:
 class AerovalJsonData:
     """class for aerovals' json files"""
 
-    pass
+    __version__ = "0.0.1"
+
+    def __init__(
+        self,
+    ):
+        self._models = []
+        self._vars = []
+        self._regions = []
+        self._data = {}
+
+    def __getitem__(self, item):
+        """x.__getitem__(y) <==> x[y]"""
+        if len(item) == 1:
+            file = item
+            if file in self._data:
+                return self._data[file]
+            else:
+                raise NameError
+        else:
+            pass
+
+    def read(
+        self,
+        file: [str, Path],
+    ):
+        if file is not None:
+            self._data[file] = None
+            try:
+                self._data[file] = json.load(file)
+            except FileNotFoundError:
+                print(f"file not found {file}.")
+                return
+
+            # probably fill out some helping vars
+
+
+
+    @property
+    def data(self):
+        """data"""
+        return self._data
+
+    @data.setter
+    def data(self, val: GriddedData):
+        model = val.data_id
+        var = val.var_name
+        self._data[model] = {}
+        self._data[model][var] = val
+
+    def add_json_data(self, file: str, data: dict):
+        self._data[file] =  data
+
+    @property
+    def models(self):
+        return self._models
+
+    @models.setter
+    def models(self, val: str):
+        self._models.append(val)
+
+
