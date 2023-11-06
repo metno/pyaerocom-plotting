@@ -71,6 +71,9 @@ def main():
     if args.models:
         options["models"] = args.models
 
+    if args.outdir:
+        options["outdir"] = args.outdir
+
     if args.plottype:
         options["plottype"] = args.plottype
 
@@ -106,19 +109,26 @@ def main():
         print("plottype error")
         sys.exit(4)
 
+    # start plotting by loop through the supplied plot types
+    # OBS: depending on the plottype the corresponding reading class has to be called
+    # e.g. pya_read for reading model data via pyaerocom
+    for _ptype in PLOT_NAMES:
+        if _ptype in options["plottype"]:
+            model_data = pya_read(options=options)
+            plt_obj = Plotting(plotdir=options["outdir"])
+            plt_obj.plot_pixel_map(model_data)
+        else:
+            print(f"plottype {_ptype} unknown. Skipping...")
+
+
+def pya_read(options: dict) -> PyaModelData:
+    """read model data using pyaerocom"""
     model_data = PyaModelData()
     for _model in options["models"]:
         model_data.read(
             _model, options["vars"], options["startyear"], options["endyear"]
         )
-
-    for _model in model_data.models:
-        for _var in model_data.variables:
-            try:
-                print(model_data.data[_model][_var])
-            except KeyError:
-                print(f"Error var {_var} not found in model {_model}")
-                pass
+    return model_data
 
 
 if __name__ == "__main__":
