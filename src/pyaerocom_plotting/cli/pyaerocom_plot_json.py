@@ -32,7 +32,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""{colors['BOLD']}Example usages:{colors['END']}
 \t{colors['UNDERLINE']}- basic usage:{colors['END']}
-\t  The following line plots the time series plot (model meaM) for the file {colors['BOLD']}./hm/ts/ALL-Aeronet-od550aer-Column.json{colors['END']}
+\t  The following line plots the time series plot (model mean) for the file {colors['BOLD']}./hm/ts/ALL-Aeronet-od550aer-Column.json{colors['END']}
 \t  pyaerocom_plot_json -o /tmp -p overall_ts_SU -f /lustre/storeB/users/jang/aeroval-local-web/data/c3s/SU_Paper/hm/ts/ALL-Aeronet-od550aer-Column.json
 
 """,
