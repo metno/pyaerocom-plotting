@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 """
-pyaerocom plot: crerate plots using the pyaerocom API
+pyaerocom_plot_json: create plots using the aeroval json files
 """
 
 import argparse
-import subprocess
 import sys
-from pathlib import Path
-from tempfile import mkdtemp
 
-from pyaerocom_plotting.const import (DEFAULT_OUTPUT_DIR, DEFAULT_TS_TYPE,
+from pyaerocom_plotting.const import (DEFAULT_OUTPUT_DIR,
                                       PLOT_NAMES_JSON)
 from pyaerocom_plotting.plotting import Plotting
 from pyaerocom_plotting.readers import AerovalJsonData
@@ -35,8 +32,8 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""{colors['BOLD']}Example usages:{colors['END']}
 \t{colors['UNDERLINE']}- basic usage:{colors['END']}
-\t  The following line plots the pixelmap for the model {colors['BOLD']}ECMWF_CAMS_REAN{colors['END']} for the year {colors['BOLD']}2019{colors['END']} for the variable {colors['BOLD']}od550aer{colors['END']}
-\t  pyaerocom_plot_json -p mmtimeseries -f <json-file>
+\t  The following line plots the time series plot (model meaM) for the file {colors['BOLD']}./hm/ts/ALL-Aeronet-od550aer-Column.json{colors['END']}
+\t  pyaerocom_plot_json -o /tmp -p overall_ts_SU -f /lustre/storeB/users/jang/aeroval-local-web/data/c3s/SU_Paper/hm/ts/ALL-Aeronet-od550aer-Column.json
 
 """,
     )
@@ -45,20 +42,6 @@ def main():
     parser.add_argument(
         "-l", "--list", help="list supported plot types", action="store_true"
     )
-    # parser.add_argument(
-    #     "-s",
-    #     "--startyear",
-    #     help="startyear to read",
-    # )
-    # parser.add_argument(
-    #     "-e", "--endyear", help="endyear to read; defaults to startyear.", nargs="?"
-    # )
-    # parser.add_argument("-v", "--variables", help="variable(s) to read", nargs="+")
-    # parser.add_argument(
-    #     "--tstype",
-    #     help=f"tstype to read; defaults to {colors['BOLD']}{DEFAULT_TS_TYPE}{colors['END']}",
-    #     nargs="?",
-    # )
     parser.add_argument(
         "-o",
         "--outdir",
@@ -93,7 +76,7 @@ def main():
 
     # start plotting by loop through the supplied plot types
     # OBS: depending on the plottype the corresponding reading class has to be called
-    # e.g. pya_read for reading model data via pyaerocom
+    # e.g. json_read for reading aeroval json files
     for _pidx, _ptype in enumerate(options["plottype"]):
         if _ptype == "overall_ts":
             # overall_ts
