@@ -20,7 +20,9 @@ pip install --no-deps -e <source directory>
 
 
 ## Help
-usage:  
+
+### pyaerocom_plot
+
 pyaerocom_plot [-h] [-m MODELS [MODELS ...]] [-p PLOTTYPE [PLOTTYPE ...]] [-l] [-s STARTYEAR] [-e [ENDYEAR]]  
                       &emsp;[-v VARIABLES [VARIABLES ...]] [-o OUTDIR]
 
@@ -53,3 +55,4 @@ variable **od550aer**
 	  `pyaerocom_plot -p pixelmap -m ECMWF_CAMS_REAN -s 2019 -v od550aer`
         
 
+### pyaerocom_plot_json

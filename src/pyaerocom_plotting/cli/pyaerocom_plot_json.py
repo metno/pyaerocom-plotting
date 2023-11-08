@@ -10,7 +10,7 @@ from pathlib import Path
 from tempfile import mkdtemp
 
 from pyaerocom_plotting.const import (DEFAULT_OUTPUT_DIR, DEFAULT_TS_TYPE,
-                                      PLOT_NAMES)
+                                      PLOT_NAMES_JSON)
 from pyaerocom_plotting.plotting import Plotting
 from pyaerocom_plotting.readers import AerovalJsonData
 
@@ -40,7 +40,7 @@ def main():
 
 """,
     )
-    parser.add_argument("-f", "--file(s)", help="file(s) to read", nargs="+")
+    parser.add_argument("-f", "--file", help="file to read")
     parser.add_argument("-p", "--plottype", help="plot type(s) to plot", nargs="+")
     parser.add_argument(
         "-l", "--list", help="list supported plot types", action="store_true"
@@ -68,8 +68,8 @@ def main():
 
     args = parser.parse_args()
     options = {}
-    if args.files:
-        options["files"] = args.files
+    if args.file:
+        options["file"] = args.file
 
     if args.outdir:
         options["outdir"] = args.outdir
@@ -79,13 +79,12 @@ def main():
 
     if args.list:
         print(f"supported plottypes are:")
-        for t in PLOT_NAMES:
+        for t in PLOT_NAMES_JSON:
             print(f"\t- {t}")
         sys.exit(0)
 
-
     # error handling:
-    if "files" not in options:
+    if "file" not in options:
         print("file error")
         sys.exit(1)
     if "plottype" not in options:
@@ -95,11 +94,17 @@ def main():
     # start plotting by loop through the supplied plot types
     # OBS: depending on the plottype the corresponding reading class has to be called
     # e.g. pya_read for reading model data via pyaerocom
-    for _ptype in PLOT_NAMES:
-        if _ptype in options["plottype"]:
+    for _pidx, _ptype in enumerate(options["plottype"]):
+        if _ptype == "overall_ts":
+            # overall_ts
             json_data = json_read(options)
             plt_obj = Plotting(plotdir=options["outdir"])
-            plt_obj.plot_pixel_map(json_data)
+            plt_obj.plot_aeroval_overall_time_series(json_data)
+        elif _ptype == "overall_ts_SU":
+            # overall_ts
+            json_data = json_read(options)
+            plt_obj = Plotting(plotdir=options["outdir"])
+            plt_obj.plot_aeroval_overall_time_series_SU_Paper(json_data)
         else:
             print(f"plottype {_ptype} unknown. Skipping...")
 
@@ -107,10 +112,8 @@ def main():
 def json_read(options: dict) -> AerovalJsonData:
     """read model data using pyaerocom"""
     json_data = AerovalJsonData()
-    for _file in options["files"]:
-        json_data.read(
-            _file
-        )
+    json_data.read(options["file"])
+
     return json_data
 
 
