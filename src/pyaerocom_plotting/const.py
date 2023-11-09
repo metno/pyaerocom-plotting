@@ -21,5 +21,9 @@ DEFAULT_OUTPUT_DIR = "."
 PLOT_NAMES = [
     "pixelmap",
 ]
+PLOT_NAMES_JSON = [
+    "overall_ts",
+    "overall_ts_SU",
+]
 
 DEFAULT_TS_TYPE = "daily"

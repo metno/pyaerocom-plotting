@@ -9,6 +9,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 import pyaerocom.io as pio
+import simplejson as json
 from pyaerocom.exceptions import DataSearchError, VarNotAvailableError
 from pyaerocom.griddeddata import GriddedData
 
@@ -125,4 +126,130 @@ class PyaColocatedData:
 class AerovalJsonData:
     """class for aerovals' json files"""
 
-    pass
+    __version__ = "0.0.1"
+
+    def __init__(
+        self,
+    ):
+        self._models = []
+        self._vars = []
+        self._modelvars = []
+        self._regions = []
+        self._data = {}
+        self._files = []
+        self._obsnetworks = []
+        self._code = []  # e.g. "Column"
+
+    def __getitem__(self, item):
+        """x.__getitem__(y) <==> x[y]"""
+        if len(item) == 1:
+            file = item
+            if file in self._data:
+                return self._data[file]
+            else:
+                raise NameError
+        else:
+            pass
+
+    def read(
+        self,
+        file: [str, Path],
+    ):
+        if file is not None:
+            self._data[file] = None
+            try:
+                with open(file) as fh:
+                    self._data[file] = json.load(fh)
+            except FileNotFoundError:
+                print(f"file not found {file}.")
+                return
+
+            # probably fill out some helping vars
+            self.files.append(file)
+            for _var in self._data[file]:
+                self.vars.append(_var)
+                for _obsnetwork in self._data[file][_var]:
+                    self.obsnetworks.append(_obsnetwork)
+                    for _code in self._data[file][_var][_obsnetwork]:
+                        self.code.append(_code)
+                        for _model in self._data[file][_var][_obsnetwork][_code]:
+                            self.models.append(_model)
+                            for _modelvar in self._data[file][_var][_obsnetwork][_code][
+                                _model
+                            ]:
+                                self.modelvars.append(_modelvar)
+                                for _region in self._data[file][_var][_obsnetwork][
+                                    _code
+                                ][_model][_modelvar]:
+                                    self.regions.append(_region)
+
+    @property
+    def data(self):
+        """data"""
+        return self._data
+
+    @data.setter
+    def data(self, val: dict):
+        model = val.data_id
+        var = val.var_name
+        self._data[model] = {}
+        self._data[model][var] = val
+
+    def add_json_data(self, file: str, data: dict):
+        self._data[file] = data
+
+    @property
+    def models(self):
+        return self._models
+
+    @models.setter
+    def models(self, val: str):
+        self._models.append(val)
+
+    @property
+    def files(self):
+        return self._files
+
+    @files.setter
+    def files(self, val: str):
+        self._files.append(val)
+
+    @property
+    def vars(self):
+        return self._vars
+
+    @vars.setter
+    def vars(self, val: str):
+        self._vars.append(val)
+
+    @property
+    def modelvars(self):
+        return self._modelvars
+
+    @modelvars.setter
+    def modelvars(self, val: str):
+        self._modelvars.append(val)
+
+    @property
+    def regions(self):
+        return self._regions
+
+    @regions.setter
+    def regions(self, val: str):
+        self._regions.append(val)
+
+    @property
+    def code(self):
+        return self._code
+
+    @code.setter
+    def code(self, val: str):
+        self._code.append(val)
+
+    @property
+    def obsnetworks(self):
+        return self._obsnetworks
+
+    @obsnetworks.setter
+    def obsnetworks(self, val: str):
+        self._obsnetworks.append(val)
