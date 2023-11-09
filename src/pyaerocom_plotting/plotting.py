@@ -50,6 +50,19 @@ class Plotting:
 
     def plot_weighted_means(self, model_obj: PyaModelData):
         """method to plot weighted means"""
+
+                # this will be a monthly plot for now
+        # create monthly plot data
+        mdata = {}
+        ts_type = "monthly"
+        for _model in model_obj.models:
+            mdata[_model] = {}
+            for _var in model_obj.variables:
+                mdata[_model][_var] = model_obj.data[_model][_var].resample_time(
+                    ts_type
+                )
+                mdata[_model][_var].cube
+        print("Anna start")
         pass
 
     def plot_aeroval_overall_time_series_SU_Paper(

@@ -112,11 +112,15 @@ def main():
     # start plotting by loop through the supplied plot types
     # OBS: depending on the plottype the corresponding reading class has to be called
     # e.g. pya_read for reading model data via pyaerocom
-    for _ptype in PLOT_NAMES:
-        if _ptype in options["plottype"]:
+    for _pidx, _ptype in enumerate(options["plottype"]):
+        if _ptype == "pixelmap":
             model_data = pya_read(options=options)
             plt_obj = Plotting(plotdir=options["outdir"])
             plt_obj.plot_pixel_map(model_data)
+        elif _ptype == "monthly_weighted_mean":
+            model_data = pya_read(options=options)
+            plt_obj = Plotting(plotdir=options["outdir"])
+            plt_obj.plot_weighted_means(model_data)
         else:
             print(f"plottype {_ptype} unknown. Skipping...")
 
