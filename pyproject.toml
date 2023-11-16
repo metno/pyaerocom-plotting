@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyaerocom_plotting"
-version = "0.0.2"
+version = "0.0.3"
 authors = [{ name = "MET Norway" }]
 description = "create plots using Met Norway's pyaerocom package'"
 readme = "README.md"
