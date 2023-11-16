@@ -53,6 +53,8 @@ class Plotting:
 
                 # this will be a monthly plot for now
         # create monthly plot data
+        import iris
+        import iris.analysis.cartography
         mdata = {}
         ts_type = "monthly"
         for _model in model_obj.models:
@@ -61,7 +63,9 @@ class Plotting:
                 mdata[_model][_var] = model_obj.data[_model][_var].resample_time(
                     ts_type
                 )
-                mdata[_model][_var].cube
+                weights = mdata[_model][_var].area_weights
+                mean = mdata[_model][_var].cube.collapsed(["latitude", "longitude"], iris.analysis.MEAN, weights=weights)
+                assert mean
         print("Anna start")
         pass
 
