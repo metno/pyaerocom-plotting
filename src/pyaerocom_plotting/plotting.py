@@ -55,6 +55,8 @@ class Plotting:
         # create monthly plot data
         import iris
         import iris.analysis.cartography
+        from pyaerocom.helpers import cftime_to_datetime64
+
         mdata = {}
         ts_type = "monthly"
         for _model in model_obj.models:
@@ -65,8 +67,10 @@ class Plotting:
                 )
                 weights = mdata[_model][_var].area_weights
                 mean = mdata[_model][_var].cube.collapsed(["latitude", "longitude"], iris.analysis.MEAN, weights=weights)
-                assert mean
-        print("Anna start")
+                # the actual data is in mean.data as masked numpy array
+                time = cftime_to_datetime64(mean.coord('time').points, cfunit=str(mean.coord('time').units), calendar=mean.coord('time').units.calendar)
+                print(time)
+                print("Anna start (one model / var at a time)")
         pass
 
     def plot_aeroval_overall_time_series_SU_Paper(
