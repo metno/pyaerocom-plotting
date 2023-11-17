@@ -3,15 +3,23 @@ from pathlib import Path
 from pyaerocom_plotting.readers import AerovalJsonData, PyaModelData
 from pyaerocom_plotting.plot_pixel_map import plot_pixel_map as _plot_pixel_map
 
+from pyaerocom_plotting.const import DEFAULT_DPI
+
+# from pyaerocom.aeroval.glob_defaults import var_ranges_defaults
+
 
 class Plotting:
     """plotting class with methods for each supported plot"""
 
     __version__ = "0.0.2"
-    DEFAULT_DPI = 300
+    DEFAULT_DPI = DEFAULT_DPI
 
-    def plot_pixel_map(self, model_obj: PyaModelData, ):
-        _plot_pixel_map(model_obj, )
+    def plot_pixel_map(
+        self,
+        model_obj: PyaModelData,
+    ):
+
+        _plot_pixel_map(model_obj, plotdir=self._plotdir)
 
     def __init__(self, plotdir: [str, Path]):
         self._plotdir = plotdir
@@ -21,10 +29,10 @@ class Plotting:
         pass
 
     def plot_aeroval_overall_time_series_SU_Paper(
-            self,
-            json_data: AerovalJsonData,
-            stat_prop: str = "data_mean",
-            title: str = None,
+        self,
+        json_data: AerovalJsonData,
+        stat_prop: str = "data_mean",
+        title: str = None,
     ):
         """method to plot the time series plot from aeroval's overall evaluation
         SPECIAL version for SU paper!!"""
@@ -92,10 +100,10 @@ class Plotting:
         # print(_midx)
 
     def plot_aeroval_overall_time_series(
-            self,
-            json_data: AerovalJsonData,
-            stat_prop: str = "data_mean",
-            title: str = None,
+        self,
+        json_data: AerovalJsonData,
+        stat_prop: str = "data_mean",
+        title: str = None,
     ):
         """method to plot the time series plot from aeroval's overall evaluation"""
         import matplotlib.pyplot as plt
