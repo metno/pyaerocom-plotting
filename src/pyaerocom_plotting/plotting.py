@@ -51,27 +51,47 @@ class Plotting:
     def plot_weighted_means(self, model_obj: PyaModelData):
         """method to plot weighted means"""
 
-                # this will be a monthly plot for now
+        # this will be a monthly plot for now
         # create monthly plot data
-        import iris
         import iris.analysis.cartography
         from pyaerocom.helpers import cftime_to_datetime64
+        import matplotlib.pyplot as plt
 
         mdata = {}
         ts_type = "monthly"
         for _model in model_obj.models:
             mdata[_model] = {}
+            fig = plt.figure(
+                figsize=(16, 9),
+            )
+            ax = fig.add_subplot(1, 1, 1)
+
+            plots = []
             for _var in model_obj.variables:
                 mdata[_model][_var] = model_obj.data[_model][_var].resample_time(
                     ts_type
                 )
                 weights = mdata[_model][_var].area_weights
-                mean = mdata[_model][_var].cube.collapsed(["latitude", "longitude"], iris.analysis.MEAN, weights=weights)
+                mean = mdata[_model][_var].cube.collapsed(
+                    ["latitude", "longitude"], iris.analysis.MEAN, weights=weights
+                )
                 # the actual data is in mean.data as masked numpy array
-                time = cftime_to_datetime64(mean.coord('time').points, cfunit=str(mean.coord('time').units), calendar=mean.coord('time').units.calendar)
+                time = cftime_to_datetime64(
+                    mean.coord("time").points,
+                    cfunit=str(mean.coord("time").units),
+                    calendar=mean.coord("time").units.calendar,
+                )
                 print(time)
                 print("Anna start (one model / var at a time)")
-        pass
+                plots.append(ax.plot(time, mean.data, linewidth=2.0, label=_var))
+
+            plt.ylabel("monthly weighted mean")
+            ax.legend()
+            plt.xlabel("time")
+            filename = f"{self._plotdir}/monthlyweightedmean_{_model}.png"
+            print(f"saving file: {filename}")
+            plt.savefig(filename, dpi=self.DEFAULT_DPI)
+            plt.close()
 
     def plot_aeroval_overall_time_series_SU_Paper(
         self,
