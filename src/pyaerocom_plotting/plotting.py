@@ -56,13 +56,16 @@ class Plotting:
         import iris.analysis.cartography
         from pyaerocom.helpers import cftime_to_datetime64
         import matplotlib.pyplot as plt
+        from matplotlib.ticker import FuncFormatter
+        from matplotlib.dates import MonthLocator, DateFormatter, YearLocator
+        from datetime import datetime
 
         mdata = {}
         ts_type = "monthly"
         for _model in model_obj.models:
             mdata[_model] = {}
             fig = plt.figure(
-                figsize=(16, 9),
+                figsize=(21, 9),
             )
             ax = fig.add_subplot(1, 1, 1)
 
@@ -83,11 +86,58 @@ class Plotting:
                 )
                 print(time)
                 print("Anna start (one model / var at a time)")
-                plots.append(ax.plot(time, mean.data, linewidth=2.0, label=_var))
+                plots.append(ax.plot(time, mean.data, linewidth=2.0, marker="o", label=_var))
 
-            plt.ylabel("monthly weighted mean")
+            plt.ylabel("weighted mean")
             ax.legend()
-            plt.xlabel("time")
+            #plt.xlabel("time")
+            ax=plt.gca()
+            ax.grid(color='#DDDDDD', linestyle='dashed')
+            month_fmt = DateFormatter('%b')
+            def m_fmt(x, pos=None):
+                return month_fmt(x)[0]
+
+            ax.xaxis.set_major_locator(MonthLocator(bymonth=[2,4,6,8,10,12]))
+            ax.xaxis.set_major_formatter(FuncFormatter(m_fmt))
+            # add second x-axis with Years
+            sec_xaxis = ax.secondary_xaxis(-0.1)
+            sec_xaxis.xaxis.set_major_locator(YearLocator(month=7))
+            sec_xaxis.xaxis.set_major_formatter(DateFormatter('%Y'))
+            # Hide the second x-axis spines and ticks
+            sec_xaxis.spines['bottom'].set_visible(False)
+            sec_xaxis.tick_params(length=0, labelsize=10, pad=-3)
+
+            print(max(mean.data))
+            ax.axvline(datetime(2023,6,27),color='black',linestyle='--')
+            ax.text(datetime(2023,6,27), max(mean.data),'48r1', ha='center')
+            ax.axvline(datetime(2021,10,13),color='black',linestyle='--')
+            ax.text(datetime(2021,10,13), max(mean.data),'47r3', ha='center')
+            ax.axvline(datetime(2021,5,19),color='black',linestyle='--')
+            ax.text(datetime(2021,5,19), max(mean.data),'47r2', ha='center')
+            ax.axvline(datetime(2020,10,6),color='black',linestyle='--')
+            ax.text(datetime(2020,10,6), max(mean.data),'47r1', ha='center')
+            ax.axvline(datetime(2019,7,9),color='black',linestyle='--')
+            ax.text(datetime(2019,7,9), max(mean.data),'46r1', ha='center')
+            ax.axvline(datetime(2018,6,26),color='black',linestyle='--')
+            ax.text(datetime(2018,6,26), max(mean.data),'45r1', ha='center')
+            ax.axvline(datetime(2017,9,26),color='black',linestyle='--')
+            ax.text(datetime(2017,9,26), max(mean.data),'43r3', ha='center')
+            ax.axvline(datetime(2017,1,24),color='black',linestyle='--')
+            ax.text(datetime(2017,1,24), max(mean.data),'43r1', ha='center')
+            ax.axvline(datetime(2016,6,21),color='black',linestyle='--')
+            ax.text(datetime(2016,6,21), max(mean.data),'41r2', ha='center')
+            ax.axvline(datetime(2015,9,3),color='black',linestyle='--')
+            ax.text(datetime(2015,9,3), max(mean.data),'41r1', ha='center')          
+            ax.axvline(datetime(2014,9,18),color='black',linestyle='--')
+            ax.text(datetime(2014,9,18), max(mean.data),'40r2', ha='center')
+            ax.axvline(datetime(2014,2,19),color='black',linestyle='--')
+            ax.text(datetime(2014,2,19), max(mean.data),'40r1', ha='center')
+            ax.axvline(datetime(2013,10,7),label='38r2',color='black',linestyle='--')
+            ax.text(datetime(2013,10,7), max(mean.data),'38r2', ha='center')
+            ax.axvline(datetime(2012,7,5),color='black',linestyle='--')
+            ax.text(datetime(2012,7,5), max(mean.data),'37r3', ha='center')
+            #ax.axvline(datetime(2009,9,1),color='black',linestyle='--')
+            #ax.text(datetime(2009,9,1), max(mean.data),'36r1', ha='center')
             filename = f"{self._plotdir}/monthlyweightedmean_{_model}.png"
             print(f"saving file: {filename}")
             plt.savefig(filename, dpi=self.DEFAULT_DPI)
