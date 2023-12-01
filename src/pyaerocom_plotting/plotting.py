@@ -101,7 +101,7 @@ class Plotting:
                 elif _var=="od550nh4":
                     plots.append(ax.plot(time, mean.data, linewidth=2.0, marker="o", label="ammonium", color='cyan'))
                 elif _var=="od550soa":
-                    plots.append(ax.plot(time, mean.data, linewidth=2.0, marker="o", label="sec organic", color='pink'))
+                    plots.append(ax.plot(time, mean.data, linewidth=2.0, marker="o", label="sec organics", color='magenta'))
 
             plt.title('Global monthly mean speciated AOD at 550nm for the CAMS o-suite')
             plt.ylabel("weighted mean")
@@ -109,6 +109,7 @@ class Plotting:
             #plt.xlabel("time")
             ax=plt.gca()
             ax.grid(color='#DDDDDD', linestyle='dashed')
+            ax.set_ylim(ymin=0)
             month_fmt = DateFormatter('%b')
             def m_fmt(x, pos=None):
                 return month_fmt(x)[0]
