@@ -59,6 +59,7 @@ class Plotting:
         from matplotlib.ticker import FuncFormatter
         from matplotlib.dates import MonthLocator, DateFormatter, YearLocator
         from datetime import datetime
+        from pyaerocom_plotting.const import TS_ANNOTATIONS, VARIABLES
 
         mdata = {}
         ts_type = "monthly"
@@ -68,6 +69,8 @@ class Plotting:
                 figsize=(21, 6),
             )
             ax = fig.add_subplot(1, 1, 1)
+
+            maxmean = -1E11
 
             plots = []
             for _var in model_obj.variables:
@@ -84,25 +87,16 @@ class Plotting:
                     cfunit=str(mean.coord("time").units),
                     calendar=mean.coord("time").units.calendar,
                 )
-                print(time)
-                if _var=="od550so4":
-                    plots.append(ax.plot(time, mean.data, linewidth=2.0, marker="o", label="sulphate", color='blue'))
-                    maxmean=max(mean.data)
-                elif _var=="od550oa":
-                    plots.append(ax.plot(time, mean.data, linewidth=2.0, marker="o", label="organics", color='red'))
-                elif _var=="od550bc":
-                    plots.append(ax.plot(time, mean.data, linewidth=2.0, marker="o", label="black carbon", color='green'))
-                elif _var=="od550ss":
-                    plots.append(ax.plot(time, mean.data, linewidth=2.0, marker="o", label="sea salt", color='purple'))
-                elif _var=="od550dust":
-                    plots.append(ax.plot(time, mean.data, linewidth=2.0, marker="o", label="dust", color='orange'))
-                elif _var=="od550no3":
-                    plots.append(ax.plot(time, mean.data, linewidth=2.0, marker="o", label="nitrate", color='brown'))
-                elif _var=="od550nh4":
-                    plots.append(ax.plot(time, mean.data, linewidth=2.0, marker="o", label="ammonium", color='cyan'))
-                elif _var=="od550soa":
-                    plots.append(ax.plot(time, mean.data, linewidth=2.0, marker="o", label="sec organics", color='magenta'))
+                try:
+                    min_time = min([time.min(), min_time])
+                    max_time = max([time.max(), max_time])
+                except NameError:
+                    min_time = time.min()
+                    max_time = time.max()  
 
+                plots.append(ax.plot(time, mean.data, linewidth=2.0, marker="o", label=VARIABLES[_var]['name'], color=VARIABLES[_var]['color']))
+
+            maxmean = max([maxmean, max(mean.data)])
             plt.title('Global monthly mean speciated AOD at 550nm for the CAMS o-suite')
             plt.ylabel("weighted mean")
             ax.legend(loc='upper left', fontsize=10)
@@ -124,37 +118,11 @@ class Plotting:
             sec_xaxis.spines['bottom'].set_visible(False)
             sec_xaxis.tick_params(length=0, labelsize=14, pad=-3)
 
-            print(max(mean.data))
-            ax.axvline(datetime(2023,6,27),color='black',linestyle='--')
-            ax.text(datetime(2023,6,27), maxmean,'48r1', ha='center',fontsize=10)
-            ax.axvline(datetime(2021,10,13),color='black',linestyle='--')
-            ax.text(datetime(2021,10,13), maxmean,'47r3', ha='center',fontsize=10)
-            ax.axvline(datetime(2021,5,19),color='black',linestyle='--')
-            ax.text(datetime(2021,5,19), maxmean,'47r2', ha='center',fontsize=10)
-            ax.axvline(datetime(2020,10,6),color='black',linestyle='--')
-            ax.text(datetime(2020,10,6), maxmean,'47r1', ha='center',fontsize=10)
-            ax.axvline(datetime(2019,7,9),color='black',linestyle='--')
-            ax.text(datetime(2019,7,9), maxmean,'46r1', ha='center',fontsize=10)
-            ax.axvline(datetime(2018,6,26),color='black',linestyle='--')
-            ax.text(datetime(2018,6,26), maxmean,'45r1', ha='center',fontsize=10)
-            ax.axvline(datetime(2017,9,26),color='black',linestyle='--')
-            ax.text(datetime(2017,9,26), maxmean,'43r3', ha='center',fontsize=10)
-            ax.axvline(datetime(2017,1,24),color='black',linestyle='--')
-            ax.text(datetime(2017,1,24), maxmean,'43r1', ha='center',fontsize=10)
-            ax.axvline(datetime(2016,6,21),color='black',linestyle='--')
-            ax.text(datetime(2016,6,21), maxmean,'41r2', ha='center',fontsize=10)
-            ax.axvline(datetime(2015,9,3),color='black',linestyle='--')
-            ax.text(datetime(2015,9,3), maxmean,'41r1', ha='center',fontsize=10)         
-            ax.axvline(datetime(2014,9,18),color='black',linestyle='--')
-            ax.text(datetime(2014,9,18), maxmean,'40r2', ha='center',fontsize=10)
-            ax.axvline(datetime(2014,2,19),color='black',linestyle='--')
-            ax.text(datetime(2014,2,19), maxmean,'40r1', ha='center',fontsize=10)
-            ax.axvline(datetime(2013,10,7),label='38r2',color='black',linestyle='--')
-            ax.text(datetime(2013,10,7), maxmean,'38r2', ha='center',fontsize=10)
-            #ax.axvline(datetime(2012,7,5),color='black',linestyle='--')
-            #ax.text(datetime(2012,7,5), max(mean.data),'37r3', ha='center')
-            #ax.axvline(datetime(2009,9,1),color='black',linestyle='--')
-            #ax.text(datetime(2009,9,1), max(mean.data),'36r1', ha='center')
+            for _time in TS_ANNOTATIONS:
+                if _time >= min_time and _time <= max_time:
+                    ax.axvline(_time, color='black', linestyle='--')
+                    ax.text(_time, maxmean, TS_ANNOTATIONS[_time], ha='center', fontsize=10)
+            
             filename = f"{self._plotdir}/monthlyweightedmean_{_model}.png"
             print(f"saving file: {filename}")
             plt.savefig(filename, dpi=self.DEFAULT_DPI)
