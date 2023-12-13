@@ -9,8 +9,7 @@ import sys
 from pathlib import Path
 from tempfile import mkdtemp
 
-from pyaerocom_plotting.const import (DEFAULT_OUTPUT_DIR, DEFAULT_TS_TYPE,
-                                      PLOT_NAMES)
+from pyaerocom_plotting.const import DEFAULT_OUTPUT_DIR, DEFAULT_TS_TYPE, PLOT_NAMES
 from pyaerocom_plotting.plotting import Plotting
 from pyaerocom_plotting.readers import PyaModelData
 

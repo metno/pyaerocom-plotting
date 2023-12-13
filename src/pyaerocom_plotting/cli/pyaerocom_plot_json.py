@@ -6,8 +6,7 @@ pyaerocom_plot_json: create plots using the aeroval json files
 import argparse
 import sys
 
-from pyaerocom_plotting.const import (DEFAULT_OUTPUT_DIR,
-                                      PLOT_NAMES_JSON)
+from pyaerocom_plotting.const import DEFAULT_OUTPUT_DIR, PLOT_NAMES_JSON
 from pyaerocom_plotting.plotting import Plotting
 from pyaerocom_plotting.readers import AerovalJsonData
 
