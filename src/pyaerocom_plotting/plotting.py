@@ -88,7 +88,10 @@ class Plotting:
         mdata = json_data.data[json_data.files[0]][json_data.vars[0]][
             json_data.obsnetworks[0]
         ][json_data.code[0]]
-        for _midx, _model in enumerate(sorted(json_data.models)):
+        # to get the right model order
+        models = ["ATSR2", "AATSR", "SLSTR.SU.A", "SLSTR.SU.B"]
+        # for _midx, _model in enumerate(sorted(json_data.models)):
+        for _midx, _model in enumerate(models):
             # does not work without the conversion to integer in between
             ts = np.array(
                 list(mdata[_model][json_data.modelvars[0]][json_data.regions[0]]),
@@ -142,7 +145,7 @@ class Plotting:
         plt.xlabel("Year")
         plt.ylabel("Mean Monthly AOD")
         plt.minorticks_on()
-        plt.grid(True)
+        # plt.grid(True)
 
         if title is None:
             plt.title(json_data.regions[0])
