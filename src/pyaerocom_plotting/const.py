@@ -53,7 +53,7 @@ for date in _TS_ANNOTATIONS:
     TS_ANNOTATIONS[pd.to_datetime(date, format="%Y/%m/%d").to_numpy()] = _TS_ANNOTATIONS[date]
 
 VARIABLES = {
-    'od550so4': {'name': "sulphur", 'color': "blue"},
+    'od550so4': {'name': "sulphate", 'color': "blue"},
     'od550oa': {'name': 'organics', 'color': 'red'},
     'od550bc': {'name': 'black carbon', 'color': 'green'},
     'od550ss': {'name': 'sea salt', 'color': 'purple'},
