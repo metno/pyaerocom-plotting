@@ -13,8 +13,8 @@ class Plotting:
         self._plotdir = plotdir
 
     def plot_pixel_map(
-            self,
-            model_obj: PyaModelData,
+        self,
+        model_obj: PyaModelData,
     ):
         """method to plot pixelmaps
 
@@ -53,11 +53,11 @@ class Plotting:
         pass
 
     def plot_aeroval_overall_time_series_SU_Paper(
-            self,
-            json_data: AerovalJsonData,
-            stat_prop: str = "data_mean",
-            title: str = None,
-            colours: list[str] = [],
+        self,
+        json_data: AerovalJsonData,
+        stat_prop: str = "data_mean",
+        title: str = None,
+        colours: list[str] = [],
     ):
         """method to plot the time series plot from aeroval's overall evaluation
         SPECIAL version for SU paper!!"""
@@ -79,7 +79,9 @@ class Plotting:
 
         # fig, ax = plt.subplots()
         # fig = plt.figure(figsize=(16, 9), layout="constrained")
-        fig = plt.figure(figsize=(16, 9), )
+        fig = plt.figure(
+            figsize=(16, 9),
+        )
         ax = fig.add_subplot(1, 1, 1)
         # ax = fig.add_axes([0.15, 0.15, 0.8, 0.75])
 
@@ -110,7 +112,7 @@ class Plotting:
             except NameError:
                 label = _model
                 color = None
-            plots.append(ax.plot(ts, ts_vals, linewidth=2.0, color = color, label=label))
+            plots.append(ax.plot(ts, ts_vals, linewidth=2.0, color=color, label=label))
             # add reference data if the plot property is "data_mean"
             if stat_prop == "data_mean":
                 # get color of last plot
@@ -126,17 +128,18 @@ class Plotting:
                         ts,
                         ts_vals,
                         linewidth=2.0,
-                        c='black',
+                        c="black",
                         ls="dotted",
                         label=f"_ref {_model}",
-                    ))
+                    )
+                )
 
         ts_vals = [np.nan for x in range(len(ts_vals))]
         ax.plot(
             ts,
             ts_vals,
             linewidth=2.0,
-            c='black',
+            c="black",
             ls="dotted",
             label=f"Aeronet",
         )
@@ -161,10 +164,10 @@ class Plotting:
 
 
 def plot_aeroval_overall_time_series(
-        self,
-        json_data: AerovalJsonData,
-        stat_prop: str = "data_mean",
-        title: str = None,
+    self,
+    json_data: AerovalJsonData,
+    stat_prop: str = "data_mean",
+    title: str = None,
 ):
     """method to plot the time series plot from aeroval's overall evaluation"""
     import matplotlib.pyplot as plt
@@ -188,9 +191,7 @@ def plot_aeroval_overall_time_series(
         ).astype("datetime64[ms]")
         ts_keys = list(mdata[_model][json_data.modelvars[0]][json_data.regions[0]])
         ts_vals = [
-            mdata[_model][json_data.modelvars[0]][json_data.regions[0]][x][
-                stat_prop
-            ]
+            mdata[_model][json_data.modelvars[0]][json_data.regions[0]][x][stat_prop]
             for x in ts_keys
         ]
         plots.append(ax.plot(ts, ts_vals, linewidth=2.0, label=_model))

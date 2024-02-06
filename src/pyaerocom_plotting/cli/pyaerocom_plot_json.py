@@ -6,8 +6,7 @@ pyaerocom_plot_json: create plots using the aeroval json files
 import argparse
 import sys
 
-from pyaerocom_plotting.const import (DEFAULT_OUTPUT_DIR,
-                                      PLOT_NAMES_JSON)
+from pyaerocom_plotting.const import DEFAULT_OUTPUT_DIR, PLOT_NAMES_JSON
 from pyaerocom_plotting.plotting import Plotting
 from pyaerocom_plotting.readers import AerovalJsonData
 
@@ -93,7 +92,9 @@ def main():
             # overall_ts
             json_data = json_read(options)
             plt_obj = Plotting(plotdir=options["outdir"])
-            plt_obj.plot_aeroval_overall_time_series_SU_Paper(json_data, title=options["plottitle"])
+            plt_obj.plot_aeroval_overall_time_series_SU_Paper(
+                json_data, title=options["plottitle"]
+            )
         else:
             print(f"plottype {_ptype} unknown. Skipping...")
 
