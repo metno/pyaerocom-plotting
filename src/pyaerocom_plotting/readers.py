@@ -162,6 +162,7 @@ class AerovalJsonData:
                     self._data[file] = json.load(fh)
             except FileNotFoundError:
                 print(f"file not found {file}.")
+                raise FileNotFoundError
                 return
 
             # probably fill out some helping vars

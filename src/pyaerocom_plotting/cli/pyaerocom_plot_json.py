@@ -37,6 +37,7 @@ def main():
 """,
     )
     parser.add_argument("-f", "--file", help="file to read")
+    parser.add_argument("-t", "--title", help="plot title", nargs="+")
     parser.add_argument("-p", "--plottype", help="plot type(s) to plot", nargs="+")
     parser.add_argument(
         "-l", "--list", help="list supported plot types", action="store_true"
@@ -58,6 +59,11 @@ def main():
 
     if args.plottype:
         options["plottype"] = args.plottype
+
+    if args.title:
+        options["plottitle"] = " ".join(args.title)
+    else:
+        options["plottitle"] = None
 
     if args.list:
         print(f"supported plottypes are:")
@@ -86,7 +92,9 @@ def main():
             # overall_ts
             json_data = json_read(options)
             plt_obj = Plotting(plotdir=options["outdir"])
-            plt_obj.plot_aeroval_overall_time_series_SU_Paper(json_data)
+            plt_obj.plot_aeroval_overall_time_series_SU_Paper(
+                json_data, title=options["plottitle"]
+            )
         else:
             print(f"plottype {_ptype} unknown. Skipping...")
 
