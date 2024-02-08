@@ -1,16 +1,142 @@
 from pathlib import Path
 
 from pyaerocom_plotting.readers import AerovalJsonData, PyaModelData
+from pyaerocom import ColocatedData
 
 
 class Plotting:
     """plotting class with methods for each supported plot"""
 
-    __version__ = "0.0.2"
+    __version__ = "0.0.3"
     DEFAULT_DPI = 300
 
     def __init__(self, plotdir: [str, Path]):
         self._plotdir = plotdir
+
+    def plot_scatter(
+        self,
+        plot_obj: ColocatedData,
+        title: str = None,
+        plot_gcos=True,
+        gcos_err_percent: float = 0.1,
+        gcos_abs_err: float = 0.03,
+        **kwargs,
+    ):
+        """method to plot scatterplots using pyaerocom
+
+        due to lack of pyaerocom API documentation this uses the iris infrastructure which is also
+        retained in pyaerocom's GriddedData object
+        """
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        # gcos_err_percent = 0.1
+        # gcos_abs_err = 0.03
+        # gcos_ stuff
+        gcos_x_data_low = np.arange(19) * 0.005 + 0.005
+        gcos_x_data_middle = np.arange(19) * 0.05 + 0.1
+        gcos_x_data_high = np.arange(19) * 0.5 + 1.0
+        gcos_x_data = np.array(
+            [gcos_x_data_low, gcos_x_data_middle, gcos_x_data_high]
+        ).flatten()
+        gcos_y_data = np.add(gcos_x_data, np.multiply(gcos_x_data, gcos_err_percent))
+        gcos_y_data[gcos_y_data <= gcos_abs_err] = gcos_abs_err
+        # i_DummyArr = where(f_GCOSYDataDiffpercent lt fC_GCOSAbsCrit / fC_GCOSPercentCrit, i_Dummy)
+        # i_MinPercentVal = f_GCOSYDataDiffpercent[i_DummyArr[-1] + 1]
+        # if i_Dummy gt 0 then f_GCOSYDataDiffpercent[i_DummyArr]=f_GCOSXData[i_DummyArr]+fC_GCOSAbsCrit
+
+        fig = plt.figure(
+            figsize=(12, 12),
+        )
+        ax = fig.add_subplot(1, 1, 1)
+
+        plots = []
+        obs_data = plot_obj.data.data[0, :, :].flatten()
+        obs_name = plot_obj.metadata["data_source"][0]
+        model_data = plot_obj.data.data[1, :, :].flatten()
+        model_name = plot_obj.metadata["data_source"][1]
+
+        xlim = [0.01, int(np.ceil(np.nanmax(model_data)))]
+        ylim = [0.01, int(np.ceil(np.nanmax(obs_data)))]
+
+        ax.set_yscale("log")
+        ax.set_xscale("log")
+
+        plots.append(
+            ax.scatter(
+                model_data,
+                obs_data,
+                marker="+",
+                color="black",
+            )
+        )
+        # xlim=(0,6), ylim=(0.6)
+        # ax.hexbin(x, y, gridsize=20)
+        if plot_gcos:
+            pass
+            plots.append(ax.plot(gcos_x_data, gcos_y_data, color="green"))
+            plots.append(ax.plot(gcos_y_data, gcos_x_data, color="green"))
+
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+        # ax.plot([xlim[0], ylim[0]], [xlim[-1], ylim[-1]], color="grey", linewidth=1, linestyle="--")
+        ax.plot(xlim, ylim, color="grey", linewidth=2, linestyle="--")
+        if title is not None:
+            ax.set_title(title)
+        plt.xlabel(f"{model_name}")
+        plt.ylabel(f"{obs_name}")
+        ax.set_aspect("equal")
+        filename = f"{self._plotdir}/scatter_{model_name}-{obs_name}.png"
+        print(f"saving file: {filename}")
+        plt.savefig(filename, dpi=self.DEFAULT_DPI)
+        plt.close()
+
+        pass
+
+    def plot_scatterdensity(
+        self,
+        plot_obj: ColocatedData,
+    ):
+        """method to plot scatterplots using pyaerocom
+
+        due to lack of pyaerocom API documentation this uses the iris infrastructure which is also
+        retained in pyaerocom's GriddedData object
+        """
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        fig = plt.figure(
+            figsize=(12, 12),
+        )
+        ax = fig.add_subplot(1, 1, 1)
+
+        plots = []
+        obs_data = plot_obj.data.data[0, :, :].flatten()
+        obs_name = plot_obj.metadata["data_source"][0]
+        model_data = plot_obj.data.data[1, :, :].flatten()
+        model_name = plot_obj.metadata["data_source"][1]
+
+        # ax.scatter(x, y, s=sizes, c=colors, vmin=0, vmax=100)
+        plots.append(
+            ax.hist2d(
+                model_data,
+                obs_data,
+                bins=(np.arange(0, 6, 0.05), np.arange(0, 6, 0.05)),
+                cmap="Greens",
+            )
+        )
+        # ax.hexbin(x, y, gridsize=20)
+
+        plt.xlabel(f"{model_name}")
+        plt.ylabel(f"{obs_name}")
+        filename = f"{self._plotdir}/scatterdensity_{model_name}-{obs_name}.png"
+        print(f"saving file: {filename}")
+        plt.savefig(filename, dpi=self.DEFAULT_DPI)
+        plt.close()
+
+        pass
 
     def plot_pixel_map(
         self,

@@ -23,6 +23,10 @@ PLOT_NAMES_JSON = [
     "overall_ts",
     "overall_ts_SU",
 ]
+PLOT_NAMES_COL = [
+    "scatterdensity",
+    "scatterplot",
+]
 
 DEFAULT_TS_TYPE = "daily"
 
@@ -43,3 +47,8 @@ TS_ANNOTATIONS = {
     #      "2012/07/05": "37r3",
     #      "2009/09/01": "36r1"
 }
+
+GCOS_CRITERION = dict(
+    od550aer={"gcos_err_percent": 0.1, "gcos_abs_err": 0.03},
+    od550lt1aer={"gcos_err_percent": 0.1, "gcos_abs_err": 0.03},
+)

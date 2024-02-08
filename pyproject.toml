@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyaerocom_plotting"
-version = "0.0.2"
+version = "0.0.3"
 authors = [{ name = "MET Norway" }]
 description = "create plots using Met Norway's pyaerocom package'"
 readme = "README.md"
@@ -30,6 +30,7 @@ dependencies = ["pyaerocom"]
 [project.scripts]
 pyaerocom_plot = "pyaerocom_plotting.cli.pyaerocom_plot:main"
 pyaerocom_plot_json = "pyaerocom_plotting.cli.pyaerocom_plot_json:main"
+pyaerocom_plot_colocated = "pyaerocom_plotting.cli.pyaerocom_plot_colocated:main"
 
 [tool.mypy]
 python_version = "3.9"
