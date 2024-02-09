@@ -30,6 +30,7 @@ class Plotting:
 
         import matplotlib.pyplot as plt
         import numpy as np
+        from pyaerocom_plotting.const import GCOS_CRITERION
 
         # gcos_err_percent = 0.1
         # gcos_abs_err = 0.03
@@ -41,6 +42,7 @@ class Plotting:
             [gcos_x_data_low, gcos_x_data_middle, gcos_x_data_high]
         ).flatten()
         gcos_y_data = np.add(gcos_x_data, np.multiply(gcos_x_data, gcos_err_percent))
+        # gcos_y_data = np.multiply(gcos_x_data, gcos_err_percent)
         gcos_y_data[gcos_y_data <= gcos_abs_err] = gcos_abs_err
         # i_DummyArr = where(f_GCOSYDataDiffpercent lt fC_GCOSAbsCrit / fC_GCOSPercentCrit, i_Dummy)
         # i_MinPercentVal = f_GCOSYDataDiffpercent[i_DummyArr[-1] + 1]
@@ -56,27 +58,34 @@ class Plotting:
         obs_name = plot_obj.metadata["data_source"][0]
         model_data = plot_obj.data.data[1, :, :].flatten()
         model_name = plot_obj.metadata["data_source"][1]
+        aerocom_var_name = plot_obj.var_name[1]
 
-        xlim = [0.01, int(np.ceil(np.nanmax(model_data)))]
-        ylim = [0.01, int(np.ceil(np.nanmax(obs_data)))]
+        # xlim = [0.01, int(np.ceil(np.nanmax(model_data)))]
+        # ylim = [0.01, int(np.ceil(np.nanmax(obs_data)))]
+        xlim = [0.01, 10.0]
+        ylim = [0.01, 10.0]
 
         ax.set_yscale("log")
         ax.set_xscale("log")
 
+        # xlim=(0,6), ylim=(0.6)
         plots.append(
             ax.scatter(
-                model_data,
                 obs_data,
+                model_data,
                 marker="+",
                 color="black",
             )
         )
-        # xlim=(0,6), ylim=(0.6)
         # ax.hexbin(x, y, gridsize=20)
         if plot_gcos:
             pass
-            plots.append(ax.plot(gcos_x_data, gcos_y_data, color="green"))
-            plots.append(ax.plot(gcos_y_data, gcos_x_data, color="green"))
+            plots.append(
+                ax.plot(gcos_x_data, gcos_y_data, color="lightgreen", linewidth=3)
+            )
+            plots.append(
+                ax.plot(gcos_y_data, gcos_x_data, color="lightgreen", linewidth=3)
+            )
 
         ax.set_xlim(xlim)
         ax.set_ylim(ylim)
@@ -84,8 +93,8 @@ class Plotting:
         ax.plot(xlim, ylim, color="grey", linewidth=2, linestyle="--")
         if title is not None:
             ax.set_title(title)
-        plt.xlabel(f"{model_name}")
-        plt.ylabel(f"{obs_name}")
+        plt.xlabel(f"obs: {obs_name}")
+        plt.ylabel(f"{model_name}")
         ax.set_aspect("equal")
         filename = f"{self._plotdir}/scatter_{model_name}-{obs_name}.png"
         print(f"saving file: {filename}")
