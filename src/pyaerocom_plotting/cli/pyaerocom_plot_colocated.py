@@ -92,9 +92,15 @@ def main():
             # classic scatterplot
             col_data = col_read(options)
             plt_obj = Plotting(plotdir=options["outdir"])
-            plt_obj.plot_scatter(
-                col_data, title=options["plottitle"]
-            )
+            plt_obj.plot_scatter(col_data, title=options["plottitle"])
+        elif _ptype == "gcos":
+            # gcos fractions
+            col_data = col_read(options)
+            from pyaerocom_plotting.stats import gcos_percentages
+
+            gcos_stats = gcos_percentages(col_data)
+            print(gcos_stats)
+            assert gcos_stats
         else:
             print(f"plottype {_ptype} unknown. Skipping...")
 

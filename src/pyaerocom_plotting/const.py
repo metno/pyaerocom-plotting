@@ -26,6 +26,7 @@ PLOT_NAMES_JSON = [
 PLOT_NAMES_COL = [
     "scatterdensity",
     "scatterplot",
+    "gcos",
 ]
 
 DEFAULT_TS_TYPE = "daily"
@@ -51,4 +52,16 @@ TS_ANNOTATIONS = {
 GCOS_CRITERION = dict(
     od550aer={"gcos_err_percent": 0.1, "gcos_abs_err": 0.03},
     od550lt1aer={"gcos_err_percent": 0.1, "gcos_abs_err": 0.03},
+)
+GCOS_CRITERION_V2 = dict(
+    od550aer=dict(
+        goal={"gcos_err_percent": 0.04, "gcos_abs_err": 0.02},
+        breakthrough={"gcos_err_percent": 0.1, "gcos_abs_err": 0.03},
+        threshold={"gcos_err_percent": 0.2, "gcos_abs_err": 0.06},
+    ),
+    od550lt1aer=dict(
+        goal={"gcos_err_percent": 0.04, "gcos_abs_err": 0.02},
+        breakthrough={"gcos_err_percent": 0.1, "gcos_abs_err": 0.03},
+        threshold={"gcos_err_percent": 0.2, "gcos_abs_err": 0.06},
+    ),
 )
