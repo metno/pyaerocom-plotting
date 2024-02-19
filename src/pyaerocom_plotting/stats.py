@@ -21,6 +21,7 @@ def gcos_percentages(coldata: ColocatedData) -> dict:
     :param coldata: ColocatedData object
     :return: dictionary of GCOS percentages
     """
+
     obs_data = coldata.data.data[0, :, :].flatten()
     model_data = coldata.data.data[1, :, :].flatten()
     var_name = coldata.var_name[1]

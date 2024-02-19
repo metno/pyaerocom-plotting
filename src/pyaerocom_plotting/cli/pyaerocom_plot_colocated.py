@@ -5,6 +5,7 @@ pyaerocom_plot_colocated: create plots pyaerocom's colocated data files
 
 import argparse
 import sys
+import numpy as np
 
 from pyaerocom_plotting.const import DEFAULT_OUTPUT_DIR, PLOT_NAMES_COL
 from pyaerocom_plotting.plotting import Plotting
@@ -96,10 +97,33 @@ def main():
         elif _ptype == "gcos":
             # gcos fractions
             col_data = col_read(options)
+            col_data_monthly = col_data.resample_time(
+                to_ts_type="monthly", how="mean", min_num_obs=3
+            )
             from pyaerocom_plotting.stats import gcos_percentages
 
             gcos_stats = gcos_percentages(col_data)
-            print(gcos_stats)
+
+            # print(gcos_stats)
+            # print(f"GCOS fractions {col_data.model_name} / {col_data.obs_name}")
+            out_arr = []
+            out_header_arr = []
+            out_header_arr.append("model_name")
+            out_header_arr.append("obs_name")
+            out_header_arr.append("start_time")
+            out_header_arr.append("stop_time")
+            out_arr.append(col_data_monthly.model_name)
+            out_arr.append(col_data_monthly.obs_name)
+            out_arr.append(np.datetime_as_string(col_data_monthly.time.min()))
+            out_arr.append(np.datetime_as_string(col_data_monthly.time.max()))
+
+            for crit in gcos_stats:
+                out_arr.append(f"{gcos_stats[crit]:.1%}")
+                out_header_arr.append(crit)
+
+                # print(f"{crit}: {gcos_stats[crit]}")
+            print(",".join(out_header_arr))
+            print(",".join((out_arr)))
             assert gcos_stats
         else:
             print(f"plottype {_ptype} unknown. Skipping...")
