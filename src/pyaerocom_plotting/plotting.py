@@ -3,6 +3,9 @@ from pathlib import Path
 from pyaerocom_plotting.readers import AerovalJsonData, PyaModelData
 from pyaerocom import ColocatedData
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 class Plotting:
     """plotting class with methods for each supported plot"""
@@ -14,13 +17,13 @@ class Plotting:
         self._plotdir = plotdir
 
     def plot_scatter(
-        self,
-        plot_obj: ColocatedData,
-        title: str = None,
-        plot_gcos=True,
-        gcos_err_percent: float = 0.1,
-        gcos_abs_err: float = 0.03,
-        **kwargs,
+            self,
+            plot_obj: ColocatedData,
+            title: str = None,
+            plot_gcos=True,
+            gcos_err_percent: float = 0.1,
+            gcos_abs_err: float = 0.03,
+            **kwargs,
     ):
         """method to plot scatterplots using pyaerocom
 
@@ -104,17 +107,14 @@ class Plotting:
         pass
 
     def plot_scatterdensity(
-        self,
-        plot_obj: ColocatedData,
+            self,
+            plot_obj: ColocatedData,
     ):
         """method to plot scatterplots using pyaerocom
 
         due to lack of pyaerocom API documentation this uses the iris infrastructure which is also
         retained in pyaerocom's GriddedData object
         """
-
-        import matplotlib.pyplot as plt
-        import numpy as np
 
         fig = plt.figure(
             figsize=(12, 12),
@@ -148,8 +148,12 @@ class Plotting:
         pass
 
     def plot_pixel_map(
-        self,
-        model_obj: PyaModelData,
+            self,
+            model_obj: PyaModelData,
+            ts_type: str = "yearly",
+            title: str = None,
+            colormap: str = None,
+            plot_grid: bool = False
     ):
         """method to plot pixelmaps
 
@@ -162,23 +166,84 @@ class Plotting:
         import iris.plot as iplt
         import iris.quickplot as qplt
         import matplotlib.pyplot as plt
+        import cartopy.crs as ccrs
+        import iris.plot as iplt
+        import matplotlib as mpl
+        from pyaerocom.aeroval.glob_defaults import var_ranges_defaults
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        import cartopy.feature as cf
 
+
+
+        crs_latlon = ccrs.PlateCarree()
         # this will be a monthly plot for now
         # create monthly plot data
         mdata = {}
-        ts_type = "monthly"
+        # ts_type = "monthly"
+        yticks = np.arange(-90, 91, 30)
+        ylabels = [f"{x:-2.0f}°" for x in yticks]
+        xticks = np.arange(-180, 181, 30)
+        xlabels = [f"{x:-2.0f}°" for x in xticks]
+
         for _model in model_obj.models:
             mdata[_model] = {}
             for _var in model_obj.variables:
+                if colormap is None:
+                    colormap = var_ranges_defaults[_var]['colmap']
+                cmap = mpl.colormaps[colormap]
+                bounds = var_ranges_defaults[_var]['scale']
+                norm = mpl.colors.BoundaryNorm(bounds, cmap.N, extend='both')
+                # norm = mpl.colors.Normalize(vmin=0, vmax=2)
+
                 mdata[_model][_var] = model_obj.data[_model][_var].resample_time(
                     ts_type
                 )
                 # loop through the resulting time steps
                 for _idx in range(mdata[_model][_var]["time"].points.size):
+                    plots = []
+
+                    fig = plt.figure(
+                        figsize=(16, 9),
+                    )
+
+                    # ax = fig.add_subplot(1, 1, 1)
+                    ax = plt.axes(projection=crs_latlon)
+
                     ts_data = mdata[_model][_var][_idx]
-                    filename = f"{self._plotdir}/pixelmap_{_model}_{_var}_m{ts_data['time'].cell(0).point.month:02}{ts_data['time'].cell(0).point.year}_{ts_type}.png"
-                    qplt.pcolormesh(ts_data.cube)
-                    plt.gca().coastlines()
+                    unit = str(ts_data.unit)
+                    if unit != "1":
+                        fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+                                     ax=ax, orientation='vertical', label=str(ts_data.unit))
+                    else:
+                        fig.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+                                 ax=ax, orientation='vertical', aspect=15, extend = "max")
+
+                    if ts_type == "monthly":
+                        filename = f"{self._plotdir}/pixelmap_{_model}_{_var}_m{ts_data['time'].cell(0).point.month:02}{ts_data['time'].cell(0).point.year}_{ts_type}.png"
+                    elif ts_type == "yearly":
+                        filename = f"{self._plotdir}/pixelmap_{_model}_{_var}_y{ts_data['time'].cell(0).point.year}_{ts_type}.png"
+                    else:
+                        raise ValueError(f"Unrecognized ts_type: {ts_type}")
+
+                    if title is None:
+                        plt_title = f"{_var} {_model} {ts_data['time'].cell(0).point.year} {ts_type}"
+                    else:
+                        plt_title = f"{title} {ts_data['time'].cell(0).point.year} {ts_type}"
+
+                    plt.title(plt_title)
+                    plots.append(iplt.pcolormesh(ts_data.cube, norm=norm, cmap=cmap))
+                    # qplt.pcolormesh(ts_data.cube)
+                    ax.add_feature(cf.COASTLINE, linewidth=0.75, color="black")
+                    ax.add_feature(cf.BORDERS, linewidth=0.75, color="black")
+                    if plot_grid:
+                        ax.gridlines(crs=crs_latlon, linestyle="-")
+                    ax.set_yticks(yticks)
+                    ax.set_yticklabels(ylabels)
+                    ax.set_xticks(xticks)
+                    ax.set_xticklabels(xlabels)
+                    # ax.set_yticks(np.arange(0, 100.1, 100/3))
+                    ax.set_xlabel("longitude")
+                    ax.set_ylabel("latitude")
                     print(f"saving file: {filename}")
                     plt.savefig(filename, dpi=self.DEFAULT_DPI)
                     plt.close()
@@ -371,11 +436,11 @@ class Plotting:
             plt.close()
 
     def plot_aeroval_overall_time_series_SU_Paper(
-        self,
-        json_data: AerovalJsonData,
-        stat_prop: str = "data_mean",
-        title: str = None,
-        colours: list[str] = [],
+            self,
+            json_data: AerovalJsonData,
+            stat_prop: str = "data_mean",
+            title: str = None,
+            colours: list[str] = [],
     ):
         """method to plot the time series plot from aeroval's overall evaluation
         SPECIAL version for SU paper!!"""
@@ -482,10 +547,10 @@ class Plotting:
 
 
 def plot_aeroval_overall_time_series(
-    self,
-    json_data: AerovalJsonData,
-    stat_prop: str = "data_mean",
-    title: str = None,
+        self,
+        json_data: AerovalJsonData,
+        stat_prop: str = "data_mean",
+        title: str = None,
 ):
     """method to plot the time series plot from aeroval's overall evaluation"""
     import matplotlib.pyplot as plt
