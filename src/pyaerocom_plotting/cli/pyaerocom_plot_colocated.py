@@ -88,12 +88,18 @@ def main():
             # scatterdensity
             col_data = col_read(options)
             plt_obj = Plotting(plotdir=options["outdir"])
-            plt_obj.plot_scatterdensity(col_data)
+            col_data_monthly = col_data.resample_time(
+                to_ts_type="monthly", how="mean", min_num_obs=3
+            )
+            plt_obj.plot_scatterdensity(col_data_monthly)
         elif _ptype == "scatterplot":
             # classic scatterplot
             col_data = col_read(options)
+            col_data_monthly = col_data.resample_time(
+                to_ts_type="monthly", how="mean", min_num_obs=3
+            )
             plt_obj = Plotting(plotdir=options["outdir"])
-            plt_obj.plot_scatter(col_data, title=options["plottitle"])
+            plt_obj.plot_scatter(col_data_monthly, title=options["plottitle"])
         elif _ptype == "gcos":
             # gcos fractions
             col_data = col_read(options)

@@ -65,3 +65,33 @@ GCOS_CRITERION_V2 = dict(
         threshold={"gcos_err_percent": 0.2, "gcos_abs_err": 0.06},
     ),
 )
+
+USER_FRIENDLY_VAR_NAMES = {
+    "od550aer":"total AOD",
+    "od550lt1aer":"FM AOD",
+}
+USER_FRIENDLY_OBS_NAMES = {
+    "AeronetSunV3Lev2.daily":"Aeronet Sun",
+    "AeronetSunV3Lev2":"Aeronet Sun",
+    "AeronetSDAV3L2":"Aeronet SDA",
+}
+
+USER_FRIENDLY_MODEL_NAMES = {
+    "MODIS6.1terra": "MODIS.terra",
+    "AATSR_ADV.v4.1": "AATSR.ADV",
+    "AATSR_ensemble.v3.1": "AATSR.Ens",
+    "AATSR_ORAC_v4.02": "AATSR.ORAC",
+    "AATSR_SU_v4.35": "AATSR.SU",
+    "MERIS_DLR_v7.0a": "MERIS.DLR",
+    "MERIS_ensemble.v1.0": "MERIS.Ens",
+    "MERIS_XBAER_v2.3": "MERIS.XBAER",
+    "OLCI_ensemble.v1.1": "OLCI.Ens",
+    "OLCI_S4O_v2.0": "OLCI.S4O",
+    "OLCI_XBAER_v1.0": "OLCI.XBAER",
+    "PARASOL_GRASP_V2.20": "PARASOL.GRASP",
+    "SLSTR_ensemble.v2.3": "SLSTR.Ens",
+    "SLSTR_ORAC_v1.00": "SLSTR.ORAC",
+    "SLSTR_SDV.v2.30": "SLSTR.SDV",
+    "SLSTR_SU_v1.12": "SLSTR.SU",
+    # "": "",
+}
