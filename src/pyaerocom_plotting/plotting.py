@@ -33,6 +33,7 @@ class Plotting:
         plot_gcos=True,
         gcos_err_percent: float = 0.1,
         gcos_abs_err: float = 0.03,
+            plot_log = False,
         **kwargs,
     ):
         """method to plot scatterplots using pyaerocom
@@ -73,16 +74,23 @@ class Plotting:
         model_data = plot_obj.data.data[1, :, :].flatten()
         model_name = plot_obj.metadata["data_source"][1]
         aerocom_var_name = plot_obj.var_name[1]
+        model_var = plot_obj.var_name[1]
+        upper_var_val = max(var_ranges_defaults[model_var]["scale"])
+        lower_var_val = min(var_ranges_defaults[model_var]["scale"])
 
         # xlim = [0.01, int(np.ceil(np.nanmax(model_data)))]
         # ylim = [0.01, int(np.ceil(np.nanmax(obs_data)))]
-        xlim = [0.01, 10.0]
-        ylim = [0.01, 10.0]
 
-        ax.set_yscale("log")
-        ax.set_xscale("log")
 
-        # xlim=(0,6), ylim=(0.6)
+        if plot_log:
+            ax.set_yscale("log")
+            ax.set_xscale("log")
+            xlim = [0.01, 10.0]
+            ylim = [0.01, 10.0]
+        else:
+            xlim = [lower_var_val, upper_var_val]
+            ylim = [lower_var_val, upper_var_val]
+# xlim=(0,6), ylim=(0.6)
         plots.append(
             ax.scatter(
                 obs_data,
@@ -107,8 +115,22 @@ class Plotting:
         ax.plot(xlim, ylim, color="grey", linewidth=2, linestyle="--")
         if title is not None:
             ax.set_title(title)
-        plt.xlabel(f"obs: {obs_name}")
-        plt.ylabel(f"{model_name}")
+        else:
+            try:
+                ax.set_title(f"scatter plot  {USER_FRIENDLY_VAR_NAMES[model_var]}")
+            except KeyError:
+                ax.set_title(f"scatter plot {model_var}")
+
+        try:
+            plt.xlabel(f"{USER_FRIENDLY_MODEL_NAMES[model_name]}")
+        except KeyError:
+            plt.xlabel(f"{model_name}")
+
+        try:
+            plt.ylabel(f"{USER_FRIENDLY_OBS_NAMES[obs_name]}")
+        except KeyError:
+            plt.ylabel(f"{obs_name}")
+
         ax.set_aspect("equal")
         filename = f"{self._plotdir}/scatter_{model_name}-{obs_name}.png"
         print(f"saving file: {filename}")
