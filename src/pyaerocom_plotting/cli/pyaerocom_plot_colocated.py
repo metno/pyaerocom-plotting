@@ -38,6 +38,7 @@ def main():
 """,
     )
     parser.add_argument("-f", "--file", help="file to read")
+    parser.add_argument("-g", "--gcos", help="file to read", default=0)
     parser.add_argument("-t", "--title", help="plot title", nargs="+")
     parser.add_argument("-p", "--plottype", help="plot type(s) to plot", nargs="+")
     parser.add_argument(
@@ -54,6 +55,14 @@ def main():
     options = {}
     if args.file:
         options["file"] = args.file
+
+    if args.gcos:
+        if args.gcos == 1:
+            options["gcos"] = True
+        else:
+            options["gcos"] = False
+    else:
+        options["gcos"] = False
 
     if args.outdir:
         options["outdir"] = args.outdir
@@ -99,7 +108,7 @@ def main():
                 to_ts_type="monthly", how="mean", min_num_obs=3
             )
             plt_obj = Plotting(plotdir=options["outdir"])
-            plt_obj.plot_scatter(col_data_monthly, title=options["plottitle"])
+            plt_obj.plot_scatter(col_data_monthly, title=options["plottitle"], plot_gcos=options["gcos"])
         elif _ptype == "gcos":
             # gcos fractions
             col_data = col_read(options)
