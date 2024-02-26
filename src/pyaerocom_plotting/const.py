@@ -69,9 +69,12 @@ GCOS_CRITERION_V2 = dict(
 USER_FRIENDLY_VAR_NAMES = {
     "od550aer":"total AOD",
     "od550lt1aer":"FM AOD",
+    "ssa670aer":"SSA @ 670nm",
 }
 USER_FRIENDLY_OBS_NAMES = {
     "AeronetSunV3Lev2.daily":"Aeronet Sun",
+    "AeronetSDAV3Lev2.daily":"Aeronet SDA",
+    "AeronetInvV3Lev2.daily":"Aeronet INV",
     "AeronetSunV3Lev2":"Aeronet Sun",
     "AeronetSDAV3L2":"Aeronet SDA",
 }
