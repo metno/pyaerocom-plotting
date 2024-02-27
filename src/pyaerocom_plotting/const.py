@@ -69,6 +69,7 @@ GCOS_CRITERION_V2 = dict(
 USER_FRIENDLY_VAR_NAMES = {
     "od550aer":"total AOD",
     "od550lt1aer":"FM AOD",
+    "od550dust":"dust AOD",
     "ssa670aer":"SSA @ 670nm",
 }
 USER_FRIENDLY_OBS_NAMES = {
@@ -96,5 +97,9 @@ USER_FRIENDLY_MODEL_NAMES = {
     "SLSTR_ORAC_v1.00": "SLSTR.ORAC",
     "SLSTR_SDV.v2.30": "SLSTR.SDV",
     "SLSTR_SU_v1.12": "SLSTR.SU",
-    # "": "",
+    "IASI_DLR.v7.1.DN": "IASI.DLR",
+    "IASI_LMD_V2.2.DN": "IASI.LMD",
+    "IASI_MAPIR_v5.1.DN": "IASI.MAPIR",
+    "IASI_ULB.v9.DN": "IASI.ULB",
+    "IASI_ensemble.v1.4": "IASI.Ens",
 }
