@@ -15,7 +15,7 @@ from pyaerocom_plotting.const import (
     USER_FRIENDLY_OBS_NAMES,
     USER_FRIENDLY_MODEL_NAMES,
 )
-
+from pyaerocom_plotting.const import GCOS_CRITERION, GCOS_CRITERION_V2
 
 class Plotting:
     """plotting class with methods for each supported plot"""
@@ -45,7 +45,7 @@ class Plotting:
         import matplotlib.pyplot as plt
         import numpy as np
 
-        from pyaerocom_plotting.const import GCOS_CRITERION
+
 
         # gcos_err_percent = 0.1
         # gcos_abs_err = 0.03
@@ -100,7 +100,7 @@ class Plotting:
             )
         )
         # ax.hexbin(x, y, gridsize=20)
-        if plot_gcos:
+        if plot_gcos and model_var in GCOS_CRITERION_V2:
             pass
             plots.append(
                 ax.plot(gcos_x_data, gcos_y_data, color="lightgreen", linewidth=3)
@@ -122,14 +122,14 @@ class Plotting:
                 ax.set_title(f"scatter plot {model_var}")
 
         try:
-            plt.xlabel(f"{USER_FRIENDLY_MODEL_NAMES[model_name]}")
+            plt.ylabel(f"{USER_FRIENDLY_MODEL_NAMES[model_name]}")
         except KeyError:
-            plt.xlabel(f"{model_name}")
+            plt.ylabel(f"{model_name}")
 
         try:
-            plt.ylabel(f"{USER_FRIENDLY_OBS_NAMES[obs_name]}")
+            plt.xlabel(f"{USER_FRIENDLY_OBS_NAMES[obs_name]}")
         except KeyError:
-            plt.ylabel(f"{obs_name}")
+            plt.xlabel(f"{obs_name}")
 
         ax.set_aspect("equal")
         filename = f"{self._plotdir}/scatter_{model_name}-{obs_name}.png"
@@ -245,7 +245,7 @@ class Plotting:
         ax.set_aspect("equal")
 
         ax.plot(xlim, ylim, color="black", linewidth=1, linestyle="--")
-        if plot_gcos:
+        if plot_gcos and model_var in GCOS_CRITERION_V2 :
             pass
             plots.append(
                 ax.plot(gcos_x_data, gcos_y_data, color=gcos_color, linewidth=1.5)
@@ -271,14 +271,14 @@ class Plotting:
             label="number of occurrences",
         )
         try:
-            plt.xlabel(f"{USER_FRIENDLY_MODEL_NAMES[model_name]}")
+            plt.ylabel(f"{USER_FRIENDLY_MODEL_NAMES[model_name]}")
         except KeyError:
-            plt.xlabel(f"{model_name}")
+            plt.ylabel(f"{model_name}")
 
         try:
-            plt.ylabel(f"{USER_FRIENDLY_OBS_NAMES[obs_name]}")
+            plt.xlabel(f"{USER_FRIENDLY_OBS_NAMES[obs_name]}")
         except KeyError:
-            plt.ylabel(f"{obs_name}")
+            plt.xlabel(f"{obs_name}")
 
         startdate = pd.to_datetime(str(plot_obj.time.data.min())).strftime("%Y%m%d")
         enddate = pd.to_datetime(str(plot_obj.time.data.max())).strftime("%Y%m%d")
