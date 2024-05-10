@@ -10,6 +10,7 @@ from getpass import getuser
 from random import randint
 from socket import gethostname
 from uuid import uuid4
+import numpy as np
 
 HOSTNAME = gethostname()
 USER = getuser()
@@ -21,6 +22,7 @@ DEFAULT_OUTPUT_DIR = "."
 PLOT_NAMES = ["pixelmap", "monthly_weighted_mean"]
 PLOT_NAMES_JSON = [
     "overall_ts",
+    "evaluation_ts",
     "overall_ts_SU",
 ]
 PLOT_NAMES_COL = [
@@ -64,20 +66,27 @@ GCOS_CRITERION_V2 = dict(
         breakthrough={"gcos_err_percent": 0.1, "gcos_abs_err": 0.03},
         threshold={"gcos_err_percent": 0.2, "gcos_abs_err": 0.06},
     ),
+    ssa670aer=dict(
+        goal={"gcos_err_percent": np.nan, "gcos_abs_err": 0.1},
+        breakthrough={"gcos_err_percent": np.nan, "gcos_abs_err": 0.2},
+        threshold={"gcos_err_percent": np.nan, "gcos_abs_err": 0.4},
+    ),
 )
 
 USER_FRIENDLY_VAR_NAMES = {
-    "od550aer":"total AOD",
-    "od550lt1aer":"FM AOD",
-    "od550dust":"dust AOD",
-    "ssa670aer":"SSA @ 670nm",
+    "od550aer": "total AOD",
+    "od550lt1aer": "FM AOD",
+    "od550dust": "dust AOD",
+    "ssa670aer": "SSA @ 670nm",
+    "proxyzdust": "DLH",
+    "proxyzaerosol": "ALH",
 }
 USER_FRIENDLY_OBS_NAMES = {
-    "AeronetSunV3Lev2.daily":"Aeronet Sun",
-    "AeronetSDAV3Lev2.daily":"Aeronet SDA",
-    "AeronetInvV3Lev2.daily":"Aeronet INV",
-    "AeronetSunV3Lev2":"Aeronet Sun",
-    "AeronetSDAV3L2":"Aeronet SDA",
+    "AeronetSunV3Lev2.daily": "Aeronet Sun",
+    "AeronetSDAV3Lev2.daily": "Aeronet SDA",
+    "AeronetInvV3Lev2.daily": "Aeronet INV",
+    "AeronetSunV3Lev2": "Aeronet Sun",
+    "AeronetSDAV3L2": "Aeronet SDA",
 }
 
 USER_FRIENDLY_MODEL_NAMES = {
@@ -93,13 +102,32 @@ USER_FRIENDLY_MODEL_NAMES = {
     "OLCI_S4O_v2.0": "OLCI.S4O",
     "OLCI_XBAER_v1.0": "OLCI.XBAER",
     "PARASOL_GRASP_V2.20": "PARASOL.GRASP",
+    "Parasol.Grasp": "PARASOL.GRASP",
     "SLSTR_ensemble.v2.3": "SLSTR.Ens",
     "SLSTR_ORAC_v1.00": "SLSTR.ORAC",
     "SLSTR_SDV.v2.30": "SLSTR.SDV",
     "SLSTR_SU_v1.12": "SLSTR.SU",
     "IASI_DLR.v7.1.DN": "IASI.DLR",
     "IASI_LMD_V2.2.DN": "IASI.LMD",
+    "IASI.LMD.LTS": "IASI.LMD",
     "IASI_MAPIR_v5.1.DN": "IASI.MAPIR",
+    "IASI.MAPIR.LTS": "IASI.MAPIR",
     "IASI_ULB.v9.DN": "IASI.ULB",
     "IASI_ensemble.v1.4": "IASI.Ens",
+}
+
+USER_COLOURS = {
+    "ATSR-2": "brown",
+    "AATSR": "green",
+    "SLSTR-A": "red",
+    "SLSTR-B": "blue",
+    "IASI.MAPIR": "orange",
+    "IASI.LMD": "orange",
+    "PARASOL.GRASP": "orange",
+    "Parasol.Grasp": "orange",
+}
+
+USER_YLIM = {
+    "proxyzdust": (0.0, 5.0),
+    "proxyzaerosol": (0.0, 5.0),
 }

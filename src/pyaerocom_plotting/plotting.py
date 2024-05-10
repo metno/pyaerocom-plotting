@@ -14,8 +14,11 @@ from pyaerocom_plotting.const import (
     USER_FRIENDLY_VAR_NAMES,
     USER_FRIENDLY_OBS_NAMES,
     USER_FRIENDLY_MODEL_NAMES,
+    USER_COLOURS,
+    USER_YLIM,
 )
 from pyaerocom_plotting.const import GCOS_CRITERION, GCOS_CRITERION_V2
+
 
 class Plotting:
     """plotting class with methods for each supported plot"""
@@ -33,7 +36,7 @@ class Plotting:
         plot_gcos=True,
         gcos_err_percent: float = 0.1,
         gcos_abs_err: float = 0.03,
-            plot_log = False,
+        plot_log=False,
         **kwargs,
     ):
         """method to plot scatterplots using pyaerocom
@@ -45,8 +48,6 @@ class Plotting:
         import matplotlib.pyplot as plt
         import numpy as np
 
-
-
         # gcos_err_percent = 0.1
         # gcos_abs_err = 0.03
         # gcos_ stuff
@@ -56,12 +57,18 @@ class Plotting:
         gcos_x_data = np.array(
             [gcos_x_data_low, gcos_x_data_middle, gcos_x_data_high]
         ).flatten()
-        gcos_y_data = np.add(gcos_x_data, np.multiply(gcos_x_data, gcos_err_percent))
-        # gcos_y_data = np.multiply(gcos_x_data, gcos_err_percent)
-        gcos_y_data[gcos_y_data <= gcos_abs_err] = gcos_abs_err
-        # i_DummyArr = where(f_GCOSYDataDiffpercent lt fC_GCOSAbsCrit / fC_GCOSPercentCrit, i_Dummy)
-        # i_MinPercentVal = f_GCOSYDataDiffpercent[i_DummyArr[-1] + 1]
-        # if i_Dummy gt 0 then f_GCOSYDataDiffpercent[i_DummyArr]=f_GCOSXData[i_DummyArr]+fC_GCOSAbsCrit
+        if np.isnan(gcos_err_percent):
+            # absolute GCOS criterion only
+            gcos_y_data = np.add(gcos_x_data, gcos_abs_err)
+        else:
+            gcos_y_data = np.add(
+                gcos_x_data, np.multiply(gcos_x_data, gcos_err_percent)
+            )
+            # gcos_y_data = np.multiply(gcos_x_data, gcos_err_percent)
+            gcos_y_data[gcos_y_data <= gcos_abs_err] = gcos_abs_err
+            # i_DummyArr = where(f_GCOSYDataDiffpercent lt fC_GCOSAbsCrit / fC_GCOSPercentCrit, i_Dummy)
+            # i_MinPercentVal = f_GCOSYDataDiffpercent[i_DummyArr[-1] + 1]
+            # if i_Dummy gt 0 then f_GCOSYDataDiffpercent[i_DummyArr]=f_GCOSXData[i_DummyArr]+fC_GCOSAbsCrit
 
         fig = plt.figure(
             figsize=(12, 12),
@@ -81,7 +88,6 @@ class Plotting:
         # xlim = [0.01, int(np.ceil(np.nanmax(model_data)))]
         # ylim = [0.01, int(np.ceil(np.nanmax(obs_data)))]
 
-
         if plot_log:
             ax.set_yscale("log")
             ax.set_xscale("log")
@@ -90,7 +96,7 @@ class Plotting:
         else:
             xlim = [lower_var_val, upper_var_val]
             ylim = [lower_var_val, upper_var_val]
-# xlim=(0,6), ylim=(0.6)
+        # xlim=(0,6), ylim=(0.6)
         plots.append(
             ax.scatter(
                 obs_data,
@@ -245,7 +251,7 @@ class Plotting:
         ax.set_aspect("equal")
 
         ax.plot(xlim, ylim, color="black", linewidth=1, linestyle="--")
-        if plot_gcos and model_var in GCOS_CRITERION_V2 :
+        if plot_gcos and model_var in GCOS_CRITERION_V2:
             pass
             plots.append(
                 ax.plot(gcos_x_data, gcos_y_data, color=gcos_color, linewidth=1.5)
@@ -326,6 +332,7 @@ class Plotting:
                 cmap = mpl.colormaps[colormap]
                 bounds = var_ranges_defaults[_var]["scale"]
                 norm = mpl.colors.BoundaryNorm(bounds, cmap.N, extend="both")
+                # norm = mpl.colors.BoundaryNorm(bounds, cmap.N, extend="max")
                 # norm = mpl.colors.Normalize(vmin=0, vmax=2)
 
                 mdata[_model][_var] = model_obj.data[_model][_var].resample_time(
@@ -350,6 +357,8 @@ class Plotting:
                             ax=ax,
                             orientation="vertical",
                             label=str(ts_data.unit),
+                            aspect=15,
+                            # extend="max",
                         )
                     else:
                         fig.colorbar(
@@ -690,72 +699,171 @@ class Plotting:
         # plt.show()
         # print(_midx)
 
+    def plot_aeroval_overall_time_series(
+        self,
+        json_data: AerovalJsonData,
+        stat_prop: str = "data_mean",
+        title: str = None,
+    ):
+        """method to plot the time series plot from aeroval's overall evaluation"""
+        import matplotlib.pyplot as plt
+        import numpy as np
 
-def plot_aeroval_overall_time_series(
-    self,
-    json_data: AerovalJsonData,
-    stat_prop: str = "data_mean",
-    title: str = None,
-):
-    """method to plot the time series plot from aeroval's overall evaluation"""
-    import matplotlib.pyplot as plt
-    import numpy as np
+        # fig, ax = plt.subplots()
+        fig = plt.figure(figsize=(16, 9), layout="constrained")
+        ax = fig.add_subplot(1, 1, 1)
+        # ax = fig.add_axes([0.15, 0.15, 0.8, 0.75])
 
-    # fig, ax = plt.subplots()
-    fig = plt.figure(figsize=(16, 9), layout="constrained")
-    ax = fig.add_subplot(1, 1, 1)
-    # ax = fig.add_axes([0.15, 0.15, 0.8, 0.75])
-
-    plots = []
-    # [file][_var][_obsnetwork][_code][_model][_modelvar]
-    mdata = json_data.data[json_data.files[0]][json_data.vars[0]][
-        json_data.obsnetworks[0]
-    ][json_data.code[0]]
-    for _midx, _model in enumerate(json_data.models):
-        # does not work without the conversion to integer in between
-        ts = np.array(
-            list(mdata[_model][json_data.modelvars[0]][json_data.regions[0]]),
-            dtype=int,
-        ).astype("datetime64[ms]")
-        ts_keys = list(mdata[_model][json_data.modelvars[0]][json_data.regions[0]])
-        ts_vals = [
-            mdata[_model][json_data.modelvars[0]][json_data.regions[0]][x][stat_prop]
-            for x in ts_keys
-        ]
-        plots.append(ax.plot(ts, ts_vals, linewidth=2.0, label=_model))
-        # add reference data if the plot property is "data_mean"
-        if stat_prop == "data_mean":
-            # get color of last plot
-            last_color = plots[-1][0].get_color()
+        plots = []
+        # [file][_var][_obsnetwork][_code][_model][_modelvar]
+        mdata = json_data.data[json_data.files[0]][json_data.vars[0]][
+            json_data.obsnetworks[0]
+        ][json_data.code[0]]
+        for _midx, _model in enumerate(json_data.models):
+            # does not work without the conversion to integer in between
+            ts = np.array(
+                list(mdata[_model][json_data.modelvars[0]][json_data.regions[0]]),
+                dtype=int,
+            ).astype("datetime64[ms]")
+            ts_keys = list(mdata[_model][json_data.modelvars[0]][json_data.regions[0]])
             ts_vals = [
                 mdata[_model][json_data.modelvars[0]][json_data.regions[0]][x][
-                    "refdata_mean"
+                    stat_prop
                 ]
                 for x in ts_keys
             ]
+            plots.append(ax.plot(ts, ts_vals, linewidth=2.0, label=_model))
+            # add reference data if the plot property is "data_mean"
+            if stat_prop == "data_mean":
+                # get color of last plot
+                last_color = plots[-1][0].get_color()
+                ts_vals = [
+                    mdata[_model][json_data.modelvars[0]][json_data.regions[0]][x][
+                        "refdata_mean"
+                    ]
+                    for x in ts_keys
+                ]
+                plots.append(
+                    ax.plot(
+                        ts,
+                        ts_vals,
+                        linewidth=2.0,
+                        c=last_color,
+                        ls="dotted",
+                        label=f"ref {_model}",
+                    )
+                )
+
+        ax.legend()
+        plt.xlabel("time")
+        plt.ylabel(json_data.modelvars[0])
+        if title is None:
+            plt.title(json_data.regions[0])
+        else:
+            plt.title(title)
+
+        filename = f"{self._plotdir}/overallts_{json_data.vars[0]}_{stat_prop}_{json_data.obsnetworks[0]}_{json_data.code[0]}.png"
+        print(f"saving file: {filename}")
+        plt.savefig(filename, dpi=self.DEFAULT_DPI)
+        plt.close()
+        # plt.show()
+        # print(_midx)
+        pass
+
+    def plot_aeroval_evaluation_time_series(
+        self,
+        json_data: dict,
+        experiment_name: str = "Layer_Heights",
+        title: str = None,
+    ):
+        """method to plot the time series plot from aeroval's evaluation
+        lower left panel"""
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        for _midx, _model in enumerate(json_data):
+            # fig, ax = plt.subplots()
+            fig = plt.figure(figsize=(16, 9), layout="constrained")
+            ax = fig.add_subplot(1, 1, 1)
+            # ax = fig.add_axes([0.15, 0.15, 0.8, 0.75])
+
+            plots = []
+
+            # does not work without the conversion to integer in between
+            ts_daily = np.array(
+                list(json_data[_model]["daily_date"]),
+                dtype=int,
+            ).astype("datetime64[ms]")
+            ts_monthly = np.array(
+                list(json_data[_model]["monthly_date"]),
+                dtype=int,
+            ).astype("datetime64[ms]")
+            ts_yearly = np.array(
+                list(json_data[_model]["yearly_date"]),
+                dtype=int,
+            ).astype("datetime64[ms]")
+            ts_daily_vals = json_data[_model]["daily_mod"]
+            ts_monthly_vals = json_data[_model]["monthly_mod"]
+            ts_yearly_vals = json_data[_model]["yearly_mod"]
+            if _midx == 0:
+                # ts_keys = list(mdata[_model][json_data.modelvars[0]][json_data.regions[0]])
+                stat_name = json_data[_model]["station_name"]
+                var_name = json_data[_model]["mod_var"]
+                unit = json_data[_model]["mod_unit"]
+            try:
+                label = USER_FRIENDLY_MODEL_NAMES[_model]
+            except (NameError, KeyError):
+                label = _model
+            try:
+                color = USER_COLOURS[label]
+            except KeyError:
+                color = None
+
+            # plots.append(ax.plot(ts_daily, ts_daily_vals, linewidth=0.5, label="daily", color=color))
             plots.append(
                 ax.plot(
-                    ts,
-                    ts_vals,
+                    ts_monthly,
+                    ts_monthly_vals,
+                    linewidth=1.0,
+                    label=None,
+                    color=color,
+                    linestyle="--",
+                )
+            )
+            plots.append(
+                ax.plot(
+                    ts_yearly,
+                    ts_yearly_vals,
                     linewidth=2.0,
-                    c=last_color,
-                    ls="dotted",
-                    label=f"ref {_model}",
+                    label=label,
+                    color=color,
+                    marker="o",
                 )
             )
 
-    ax.legend()
-    plt.xlabel("time")
-    plt.ylabel(json_data.modelvars[0])
-    if title is None:
-        plt.title(json_data.regions[0])
-    else:
-        plt.title(title)
+            ax.legend()
+            plt.xlabel("time")
+            try:
+                plot_var_name = USER_FRIENDLY_VAR_NAMES[var_name]
+            except KeyError:
+                plot_var_name = var_name
 
-    filename = f"{self._plotdir}/overallts_{json_data.vars[0]}_{stat_prop}_{json_data.obsnetworks[0]}_{json_data.code[0]}.png"
-    print(f"saving file: {filename}")
-    plt.savefig(filename, dpi=self.DEFAULT_DPI)
-    plt.close()
-    # plt.show()
-    # print(_midx)
-    pass
+            plt.ylabel(f"{plot_var_name} [{unit}]")
+            if title is None:
+                plt.title(f"{plot_var_name} - {stat_name} - 2005-2013")
+            else:
+                plt.title(title)
+
+            try:
+                ylim = USER_YLIM[var_name]
+                ax.set_ylim(ylim)
+            except KeyError:
+                pass
+
+            filename = f"{self._plotdir}/evalts_{plot_var_name}_{stat_name}_{experiment_name}-{_model}.png"
+            print(f"saving file: {filename}")
+            plt.savefig(filename, dpi=self.DEFAULT_DPI)
+            plt.close()
+        # plt.show()
+        # print(_midx)
+        pass

@@ -7,7 +7,11 @@ import argparse
 import sys
 import numpy as np
 
-from pyaerocom_plotting.const import DEFAULT_OUTPUT_DIR, PLOT_NAMES_COL
+from pyaerocom_plotting.const import (
+    DEFAULT_OUTPUT_DIR,
+    PLOT_NAMES_COL,
+    GCOS_CRITERION_V2,
+)
 from pyaerocom_plotting.plotting import Plotting
 from pyaerocom import ColocatedData
 
@@ -38,7 +42,9 @@ def main():
 """,
     )
     parser.add_argument("-f", "--file", help="file to read")
-    parser.add_argument("-g", "--gcos", help="file to read", default=0)
+    parser.add_argument(
+        "-g", "--gcos", help="plot gcos fraction lines", action="store_true"
+    )
     parser.add_argument("-t", "--title", help="plot title", nargs="+")
     parser.add_argument("-p", "--plottype", help="plot type(s) to plot", nargs="+")
     parser.add_argument(
@@ -57,10 +63,7 @@ def main():
         options["file"] = args.file
 
     if args.gcos:
-        if args.gcos == 1:
-            options["gcos"] = True
-        else:
-            options["gcos"] = False
+        options["gcos"] = True
     else:
         options["gcos"] = False
 
@@ -107,8 +110,23 @@ def main():
             col_data_monthly = col_data.resample_time(
                 to_ts_type="monthly", how="mean", min_num_obs=3
             )
+            model_var = col_data.var_name[1]
             plt_obj = Plotting(plotdir=options["outdir"])
-            plt_obj.plot_scatter(col_data_monthly, title=options["plottitle"], plot_gcos=options["gcos"])
+            try:
+                gcos_crits = GCOS_CRITERION_V2[model_var]["goal"]
+                plt_obj.plot_scatter(
+                    col_data_monthly,
+                    title=options["plottitle"],
+                    gcos_abs_err=gcos_crits["gcos_abs_err"],
+                    gcos_err_percent=gcos_crits["gcos_err_percent"],
+                    plot_gcos=options["gcos"],
+                )
+            except KeyError as e:
+                print(
+                    f"no GCOS criterions for variable {model_var} found! plotting without GCOS indication"
+                )
+                plt_obj.plot_scatter(col_data_monthly, title=options["plottitle"])
+
         elif _ptype == "gcos":
             # gcos fractions
             col_data = col_read(options)

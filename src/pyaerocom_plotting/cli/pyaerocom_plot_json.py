@@ -9,6 +9,7 @@ import sys
 from pyaerocom_plotting.const import DEFAULT_OUTPUT_DIR, PLOT_NAMES_JSON
 from pyaerocom_plotting.plotting import Plotting
 from pyaerocom_plotting.readers import AerovalJsonData
+import json
 
 
 def main():
@@ -95,6 +96,23 @@ def main():
             plt_obj.plot_aeroval_overall_time_series_SU_Paper(
                 json_data, title=options["plottitle"]
             )
+        elif _ptype == "evaluation_ts":
+            # evaluation_ts (lower left panel from the evaluation page)
+            with open(options["file"], "r") as fh:
+                json_data = json.load(fh)
+            # json_data = json_read(options)
+            plt_obj = Plotting(plotdir=options["outdir"])
+            plt_obj.plot_aeroval_evaluation_time_series(
+                json_data, title=options["plottitle"]
+            )
+        elif _ptype == "overall_ts_SU":
+            # overall_ts
+            json_data = json_read(options)
+            plt_obj = Plotting(plotdir=options["outdir"])
+            plt_obj.plot_aeroval_overall_time_series_SU_Paper(
+                json_data, title=options["plottitle"]
+            )
+
         else:
             print(f"plottype {_ptype} unknown. Skipping...")
 
