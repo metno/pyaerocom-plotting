@@ -2,14 +2,13 @@ from pathlib import Path
 
 import cartopy.crs as ccrs
 import cartopy.feature as cf
-import iris.plot as iplt
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from pyaerocom import ColocatedData
-from pyaerocom.aeroval.glob_defaults import var_ranges_defaults
+from pyaerocom.aeroval.glob_defaults import VarWebScaleAndColormap
 
-from pyaerocom_plotting.readers import AerovalJsonData, PyaModelData
+from pyaerocom_plotting.const import GCOS_CRITERION_V2
 from pyaerocom_plotting.const import (
     USER_FRIENDLY_VAR_NAMES,
     USER_FRIENDLY_OBS_NAMES,
@@ -17,7 +16,9 @@ from pyaerocom_plotting.const import (
     USER_COLOURS,
     USER_YLIM,
 )
-from pyaerocom_plotting.const import GCOS_CRITERION, GCOS_CRITERION_V2
+from pyaerocom_plotting.readers import AerovalJsonData, PyaModelData
+
+var_ranges_defaults = VarWebScaleAndColormap()
 
 
 class Plotting:
@@ -26,18 +27,22 @@ class Plotting:
     __version__ = "0.0.3"
     DEFAULT_DPI = 300
 
-    def __init__(self, plotdir: [str, Path]):
+    def __init__(self, plotdir: [str, Path], var_scale_file=None):
         self._plotdir = plotdir
+        if var_scale_file:
+            self.var_ranges_defaults = VarWebScaleAndColormap(config_file=var_scale_file)
+        else:
+            self.var_ranges_defaults = var_ranges_defaults
 
     def plot_scatter(
-        self,
-        plot_obj: ColocatedData,
-        title: str = None,
-        plot_gcos=True,
-        gcos_err_percent: float = 0.1,
-        gcos_abs_err: float = 0.03,
-        plot_log=False,
-        **kwargs,
+            self,
+            plot_obj: ColocatedData,
+            title: str = None,
+            plot_gcos=True,
+            gcos_err_percent: float = 0.1,
+            gcos_abs_err: float = 0.03,
+            plot_log=False,
+            **kwargs,
     ):
         """method to plot scatterplots using pyaerocom
 
@@ -82,8 +87,8 @@ class Plotting:
         model_name = plot_obj.metadata["data_source"][1]
         aerocom_var_name = plot_obj.var_name[1]
         model_var = plot_obj.var_name[1]
-        upper_var_val = max(var_ranges_defaults[model_var]["scale"])
-        lower_var_val = min(var_ranges_defaults[model_var]["scale"])
+        upper_var_val = max(self.var_ranges_defaults[model_var]["scale"])
+        lower_var_val = min(self.var_ranges_defaults[model_var]["scale"])
 
         # xlim = [0.01, int(np.ceil(np.nanmax(model_data)))]
         # ylim = [0.01, int(np.ceil(np.nanmax(obs_data)))]
@@ -146,15 +151,15 @@ class Plotting:
         pass
 
     def plot_scatterdensity(
-        self,
-        plot_obj: ColocatedData,
-        title: str = None,
-        plot_gcos=True,
-        colormap: str = "viridis_r",
-        gcos_color="black",
-        gcos_err_percent: float = 0.1,
-        gcos_abs_err: float = 0.03,
-        **kwargs,
+            self,
+            plot_obj: ColocatedData,
+            title: str = None,
+            plot_gcos=True,
+            colormap: str = "viridis_r",
+            gcos_color="black",
+            gcos_err_percent: float = 0.1,
+            gcos_abs_err: float = 0.03,
+            **kwargs,
     ):
         """method to plot scatterplots using pyaerocom
 
@@ -184,7 +189,7 @@ class Plotting:
         model_data = plot_obj.data.data[1, :, :].flatten()
         model_name = plot_obj.metadata["data_source"][1]
         model_var = plot_obj.var_name[1]
-        upper_var_val = max(var_ranges_defaults[model_var]["scale"])
+        upper_var_val = max(self.var_ranges_defaults[model_var]["scale"])
 
         # cmap = mpl.colormaps[colormap]
         bins = (
@@ -201,7 +206,7 @@ class Plotting:
         hist_data = np.histogram2d(model_data, obs_data, bins=bins)
         hist_data[0][hist_data[0] == 0] = -1
 
-        # bounds = var_ranges_defaults[_var]['scale']
+        # bounds = self.var_ranges_defaults[_var]['scale']
         # bounds = np.array((  0,  10,  20,  30,  40,  50,  60,  70,  80,  90, 100,  200, 300, 400, 500, 1000, 2000, 3000, 4000, 5000), dtype=float)
         bounds = np.array(
             (
@@ -296,12 +301,13 @@ class Plotting:
         pass
 
     def plot_pixel_map(
-        self,
-        model_obj: PyaModelData,
-        ts_type: str = "yearly",
-        title: str = None,
-        colormap: str = None,
-        plot_grid: bool = False,
+            self,
+            model_obj: PyaModelData,
+            ts_type: str = "yearly",
+            title: str = None,
+            colormap: str = None,
+            plot_grid: bool = False,
+            var_scale_file: str = None,
     ):
         """method to plot pixelmaps
 
@@ -309,10 +315,7 @@ class Plotting:
         retained in pyaerocom's GriddedData object
         """
 
-        import iris
-        import iris.analysis.cartography
         import iris.plot as iplt
-        import iris.quickplot as qplt
 
         crs_latlon = ccrs.PlateCarree()
         # this will be a monthly plot for now
@@ -328,9 +331,9 @@ class Plotting:
             mdata[_model] = {}
             for _var in model_obj.variables:
                 if colormap is None:
-                    colormap = var_ranges_defaults[_var]["colmap"]
+                    colormap = self.var_ranges_defaults[_var]["colmap"]
                 cmap = mpl.colormaps[colormap]
-                bounds = var_ranges_defaults[_var]["scale"]
+                bounds = self.var_ranges_defaults[_var]["scale"]
                 norm = mpl.colors.BoundaryNorm(bounds, cmap.N, extend="both")
                 # norm = mpl.colors.BoundaryNorm(bounds, cmap.N, extend="max")
                 # norm = mpl.colors.Normalize(vmin=0, vmax=2)
@@ -352,7 +355,7 @@ class Plotting:
                     ts_data = mdata[_model][_var][_idx]
                     unit = str(ts_data.unit)
                     if unit != "1":
-                        fig.colorbar(
+                        cbar = fig.colorbar(
                             mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
                             ax=ax,
                             orientation="vertical",
@@ -360,14 +363,17 @@ class Plotting:
                             aspect=15,
                             # extend="max",
                         )
+                        cbar.ax.tick_params(labelsize=15, )
+
                     else:
-                        fig.colorbar(
+                        cbar = fig.colorbar(
                             mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
                             ax=ax,
                             orientation="vertical",
                             aspect=15,
                             extend="max",
                         )
+                        cbar.ax.tick_params(labelsize=15, )
 
                     if ts_type == "monthly":
                         filename = f"{self._plotdir}/pixelmap_{_model}_{_var}_m{ts_data['time'].cell(0).point.month:02}{ts_data['time'].cell(0).point.year}_{ts_type}.png"
@@ -376,14 +382,24 @@ class Plotting:
                     else:
                         raise ValueError(f"Unrecognized ts_type: {ts_type}")
 
+                    try:
+                        user_friendfly_var = USER_FRIENDLY_VAR_NAMES[_var]
+                    except KeyError:
+                        user_friendfly_var = _var
+
+                    try:
+                        user_mod_name = USER_FRIENDLY_MODEL_NAMES[_model]
+                    except KeyError:
+                        user_mod_name = _model
+
                     if title is None:
-                        plt_title = f"{_var} {_model} {ts_data['time'].cell(0).point.year} {ts_type}"
+                        plt_title = f"{user_mod_name} {user_friendfly_var} {ts_data['time'].cell(0).point.year} {ts_type}"
                     else:
                         plt_title = (
                             f"{title} {ts_data['time'].cell(0).point.year} {ts_type}"
                         )
 
-                    plt.title(plt_title)
+                    plt.title(plt_title, fontsize=20)
                     plots.append(iplt.pcolormesh(ts_data.cube, norm=norm, cmap=cmap))
                     # qplt.pcolormesh(ts_data.cube)
                     ax.add_feature(cf.COASTLINE, linewidth=0.75, color="black")
@@ -393,10 +409,12 @@ class Plotting:
                     ax.set_yticks(yticks)
                     ax.set_yticklabels(ylabels)
                     ax.set_xticks(xticks)
+                    ax.tick_params(labelsize=14, )
                     ax.set_xticklabels(xlabels)
                     # ax.set_yticks(np.arange(0, 100.1, 100/3))
-                    ax.set_xlabel("longitude")
-                    ax.set_ylabel("latitude")
+                    ax.set_xlabel("longitude", fontsize=20)
+
+                    ax.set_ylabel("latitude", fontsize=20)
                     print(f"saving file: {filename}")
                     plt.savefig(filename, dpi=self.DEFAULT_DPI)
                     plt.close()
@@ -590,11 +608,11 @@ class Plotting:
             plt.close()
 
     def plot_aeroval_overall_time_series_SU_Paper(
-        self,
-        json_data: AerovalJsonData,
-        stat_prop: str = "data_mean",
-        title: str = None,
-        colours: list[str] = [],
+            self,
+            json_data: AerovalJsonData,
+            stat_prop: str = "data_mean",
+            title: str = None,
+            colours: list[str] = [],
     ):
         """method to plot the time series plot from aeroval's overall evaluation
         SPECIAL version for SU paper!!"""
@@ -700,10 +718,10 @@ class Plotting:
         # print(_midx)
 
     def plot_aeroval_overall_time_series(
-        self,
-        json_data: AerovalJsonData,
-        stat_prop: str = "data_mean",
-        title: str = None,
+            self,
+            json_data: AerovalJsonData,
+            stat_prop: str = "data_mean",
+            title: str = None,
     ):
         """method to plot the time series plot from aeroval's overall evaluation"""
         import matplotlib.pyplot as plt
@@ -771,10 +789,10 @@ class Plotting:
         pass
 
     def plot_aeroval_evaluation_time_series(
-        self,
-        json_data: dict,
-        experiment_name: str = "Layer_Heights",
-        title: str = None,
+            self,
+            json_data: dict,
+            experiment_name: str = "Layer_Heights",
+            title: str = None,
     ):
         """method to plot the time series plot from aeroval's evaluation
         lower left panel"""
