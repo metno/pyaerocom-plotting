@@ -203,6 +203,7 @@ class Plotting:
             cmcolors, name="griesiemap", N=cmcolors.shape[0]
         )
 
+
         hist_data = np.histogram2d(model_data, obs_data, bins=bins)
         hist_data[0][hist_data[0] == 0] = -1
 
@@ -256,6 +257,7 @@ class Plotting:
         ax.set_aspect("equal")
 
         ax.plot(xlim, ylim, color="black", linewidth=1, linestyle="--")
+        ax.tick_params(labelsize=14, )
         if plot_gcos and model_var in GCOS_CRITERION_V2:
             pass
             plots.append(
@@ -266,30 +268,34 @@ class Plotting:
             )
 
         if title is not None:
-            ax.set_title(title)
+            ax.set_title(title, fontsize=20)
         else:
             try:
-                ax.set_title(f"scatterdensity {USER_FRIENDLY_VAR_NAMES[model_var]}")
+                ax.set_title(f"scatterdensity {USER_FRIENDLY_VAR_NAMES[model_var]}", fontsize=20)
             except KeyError:
-                ax.set_title(f"scatterdensity {model_var}")
+                ax.set_title(f"scatterdensity {model_var}", fontsize=20)
 
-        fig.colorbar(
+        cbar = fig.colorbar(
             mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
             ax=ax,
             orientation="vertical",
             aspect=15,
             extend="max",
             label="number of occurrences",
+
+
         )
+        cbar.ax.tick_params(labelsize=15, )
+        cbar.set_label("number of occurrences", size=15)
         try:
-            plt.ylabel(f"{USER_FRIENDLY_MODEL_NAMES[model_name]}")
+            plt.ylabel(f"{USER_FRIENDLY_MODEL_NAMES[model_name]}", fontsize=20)
         except KeyError:
-            plt.ylabel(f"{model_name}")
+            plt.ylabel(f"{model_name}", fontsize=20)
 
         try:
-            plt.xlabel(f"{USER_FRIENDLY_OBS_NAMES[obs_name]}")
+            plt.xlabel(f"{USER_FRIENDLY_OBS_NAMES[obs_name]}", fontsize=20)
         except KeyError:
-            plt.xlabel(f"{obs_name}")
+            plt.xlabel(f"{obs_name}", fontsize=20)
 
         startdate = pd.to_datetime(str(plot_obj.time.data.min())).strftime("%Y%m%d")
         enddate = pd.to_datetime(str(plot_obj.time.data.max())).strftime("%Y%m%d")
@@ -297,8 +303,6 @@ class Plotting:
         print(f"saving file: {filename}")
         plt.savefig(filename, dpi=self.DEFAULT_DPI)
         plt.close()
-
-        pass
 
     def plot_pixel_map(
             self,
@@ -430,7 +434,7 @@ class Plotting:
         import matplotlib.pyplot as plt
         from matplotlib.dates import DateFormatter, MonthLocator, YearLocator
         from matplotlib.ticker import FuncFormatter
-        from pyaerocom.helpers import cftime_to_datetime64
+        from pyaerocom.units.datetime import cftime_to_datetime64
 
         mdata = {}
         ts_type = "monthly"
