@@ -79,7 +79,9 @@ USER_FRIENDLY_VAR_NAMES = {
     "od550dust": "dust AOD",
     "ssa670aer": "SSA @ 670nm",
     "proxyzdust": "DLH",
+    "zdust": "DLH",
     "proxyzaerosol": "ALH",
+    "zaerosol": "ALH",
 }
 USER_FRIENDLY_OBS_NAMES = {
     "AeronetSunV3Lev2.daily": "Aeronet Sun",
@@ -104,6 +106,7 @@ USER_FRIENDLY_MODEL_NAMES = {
     "PARASOL_GRASP_V2.20": "PARASOL.GRASP",
     "Parasol.Grasp": "PARASOL.GRASP",
     "SLSTR_ensemble.v2.3": "SLSTR.Ens",
+    "SLSTR_ensemble.v2.4": "SLSTR.Ens",
     "SLSTR_ORAC_v1.00": "SLSTR.ORAC",
     "SLSTR_SDV.v2.30": "SLSTR.SDV",
     "SLSTR_SU_v1.12": "SLSTR.SU",
@@ -130,4 +133,5 @@ USER_COLOURS = {
 USER_YLIM = {
     "proxyzdust": (0.0, 5.0),
     "proxyzaerosol": (0.0, 5.0),
+    "od550aer": (0.0, 2.0),
 }

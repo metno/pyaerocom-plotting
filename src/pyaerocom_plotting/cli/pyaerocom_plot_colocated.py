@@ -42,6 +42,7 @@ def main():
 """,
     )
     parser.add_argument("-f", "--file", help="file to read")
+    parser.add_argument("--varscalefile", help="user defined variable scale file",)
     parser.add_argument(
         "-g", "--gcos", help="plot gcos fraction lines", action="store_true"
     )
@@ -73,6 +74,9 @@ def main():
     if args.plottype:
         options["plottype"] = args.plottype
 
+    if args.varscalefile:
+        options["varscalefile"] = args.varscalefile
+
     if args.title:
         options["plottitle"] = " ".join(args.title)
     else:
@@ -95,11 +99,15 @@ def main():
     # start plotting by loop through the supplied plot types
     # OBS: depending on the plottype the corresponding reading class has to be called
     # e.g. json_read for reading aeroval json files
+    if "varscalefile" in options:
+        var_scale_file = options["varscalefile"]
+    else:
+        var_scale_file = None
     for _pidx, _ptype in enumerate(options["plottype"]):
         if _ptype == "scatterdensity":
             # scatterdensity
             col_data = col_read(options)
-            plt_obj = Plotting(plotdir=options["outdir"])
+            plt_obj = Plotting(plotdir=options["outdir"], var_scale_file=var_scale_file)
             col_data_monthly = col_data.resample_time(
                 to_ts_type="monthly", how="mean", min_num_obs=3
             )
@@ -111,7 +119,7 @@ def main():
                 to_ts_type="monthly", how="mean", min_num_obs=3
             )
             model_var = col_data.var_name[1]
-            plt_obj = Plotting(plotdir=options["outdir"])
+            plt_obj = Plotting(plotdir=options["outdir"], var_scale_file=var_scale_file)
             try:
                 gcos_crits = GCOS_CRITERION_V2[model_var]["goal"]
                 plt_obj.plot_scatter(

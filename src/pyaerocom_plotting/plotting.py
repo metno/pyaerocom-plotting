@@ -368,6 +368,7 @@ class Plotting:
                             # extend="max",
                         )
                         cbar.ax.tick_params(labelsize=15, )
+                        cbar.set_label(str(ts_data.unit) , size=15)
 
                     else:
                         cbar = fig.colorbar(
