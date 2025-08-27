@@ -806,7 +806,8 @@ class Plotting:
 
         for _midx, _model in enumerate(json_data):
             # fig, ax = plt.subplots()
-            fig = plt.figure(figsize=(16, 9), layout="constrained")
+            # fig = plt.figure(figsize=(16, 9), layout="constrained")
+            fig = plt.figure(figsize=(16, 9),)
             ax = fig.add_subplot(1, 1, 1)
             # ax = fig.add_axes([0.15, 0.15, 0.8, 0.75])
 
@@ -847,7 +848,7 @@ class Plotting:
                 ax.plot(
                     ts_monthly,
                     ts_monthly_vals,
-                    linewidth=1.0,
+                    linewidth=2.0,
                     label=None,
                     color=color,
                     linestyle="--",
@@ -857,25 +858,25 @@ class Plotting:
                 ax.plot(
                     ts_yearly,
                     ts_yearly_vals,
-                    linewidth=2.0,
+                    linewidth=3.0,
                     label=label,
                     color=color,
                     marker="o",
                 )
             )
 
-            ax.legend()
-            plt.xlabel("time")
+            ax.legend(fontsize=18)
+            plt.xlabel("time", fontsize=20)
             try:
                 plot_var_name = USER_FRIENDLY_VAR_NAMES[var_name]
             except KeyError:
                 plot_var_name = var_name
 
-            plt.ylabel(f"{plot_var_name} [{unit}]")
+            plt.ylabel(f"{plot_var_name} [{unit}]", fontsize=20)
             if title is None:
-                plt.title(f"{plot_var_name} - {stat_name} - 2005-2013")
+                plt.title(f"{plot_var_name} - {stat_name} - 2005-2013", fontsize=20)
             else:
-                plt.title(title)
+                plt.title(title, fontsize=20)
 
             try:
                 ylim = USER_YLIM[var_name]
@@ -883,6 +884,7 @@ class Plotting:
             except KeyError:
                 pass
 
+            ax.tick_params(labelsize=18, )
             filename = f"{self._plotdir}/evalts_{plot_var_name}_{stat_name}_{experiment_name}-{_model}.png"
             print(f"saving file: {filename}")
             plt.savefig(filename, dpi=self.DEFAULT_DPI)
