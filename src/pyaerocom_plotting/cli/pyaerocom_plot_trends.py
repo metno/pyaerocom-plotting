@@ -6,6 +6,15 @@ import matplotlib.pyplot as plt
 
 from scipy.stats import theilslopes, kendalltau
 
+import argparse
+import subprocess
+import sys
+from tempfile import mkdtemp
+
+from pyaerocom_plotting.const import DEFAULT_OUTPUT_DIR, DEFAULT_TS_TYPE, PLOT_NAMES, USER_FRIENDLY_MODEL_NAMES
+from pyaerocom_plotting.plotting import Plotting
+
+
 
 modelvar = "od550aer"
 modelvar = "od550aer"
@@ -24,12 +33,14 @@ INFILE = "/home/jang/data/aeroval-local-web/data/c3s/combined.dual.view/hm/ts/AL
 
 OUTDIR = "/home/jang/data/c3s2_aerosol/PQAR_202509/images"
 
-# default_colors = "skyblue,black,lightgreen,skyblue,black,lightgreen".split(",")
-# default_colors = "skyblue,black,lightgreen,orange,skyblue,black,lightgreen,orange".split(",")
-default_colors = "skyblue,black,lightgreen,orange,darkviolet,skyblue,black,lightgreen,orange,darkviolet".split(",")
-# default_style = "-,-,-,--,--,--,--".split(",")
-# default_style = "-,-,-,-,--,--,--,--,--".split(",")
-default_style = "-,-,-,-,-,--,--,--,--,--,--".split(",")
+# DEFAULT_COLORS = "skyblue,black,lightgreen,skyblue,black,lightgreen".split(",")
+# DEFAULT_COLORS = "skyblue,black,lightgreen,orange,skyblue,black,lightgreen,orange".split(",")
+DEFAULT_COLORS = "skyblue,black,lightgreen,orange,darkviolet,skyblue,black,lightgreen,orange,darkviolet".split(",")
+# DEFAULT_STYLE = "-,-,-,--,--,--,--".split(",")
+# DEFAULT_STYLE = "-,-,-,-,--,--,--,--,--".split(",")
+DEFAULT_STYLE = "-,-,-,-,-,--,--,--,--,--,--".split(",")
+DATA_STYLE = "-"
+TRENDS_STYLE = "--"
 ms_per_year = 1.e3*60*60*24*365
 # title="AOD - ALL - 1995-2022"
 # title="AOD - ALL - 2003-2018"
@@ -37,19 +48,86 @@ title="dust AOD - ALL - 2007-2013"
 subtitle=""
 
 def main():
+    # define some terminal colors to be used in the help
+    colors = {
+        "BOLD": "\033[1m",
+        "UNDERLINE": "\033[4m",
+        "END": "\033[0m",
+        "PURPLE": "\033[95m",
+        "CYAN": "\033[96m",
+        "DARKCYAN": "\033[36m",
+        "BLUE": "\033[94m",
+        "GREEN": "\033[92m",
+        "YELLOW": "\033[93m",
+        "RED": "\033[91m",
+    }
+
+    parser = argparse.ArgumentParser(
+        description="create trend plots with Met Norway's pyaerocom package",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=f"""{colors['BOLD']}Example usages:{colors['END']}
+\t{colors['UNDERLINE']}- basic usage:{colors['END']}
+\t  The following line plots the pixelmap for the model {colors['BOLD']}ECMWF_CAMS_REAN{colors['END']} for the year {colors['BOLD']}2019{colors['END']} for the variable {colors['BOLD']}od550aer{colors['END']}
+\t  pyaerocom_plot -p pixelmap -m ECMWF_CAMS_REAN -s 2019 -v od550aer
+
+""",
+    )
+    # parser.add_argument("-m", "--models", help="models(s) to read", nargs="+")
+    # parser.add_argument("-p", "--plottype", help="plot type(s) to plot", nargs="+")
+    # parser.add_argument("--varscalefile", help="user defined variable scale file",)
+    parser.add_argument("-v", "--variables", help="variable(s) to read", nargs="+")
+    parser.add_argument("--obsnetwork", help="obs network to read", nargs=1)
+    parser.add_argument("-t", "--title", help="plot title", nargs="+")
+    parser.add_argument("-r", "--removemodel", help="models to remove from plot", nargs="+")
+    parser.add_argument("-f", "--file", help="file to read", nargs=1)
+    parser.add_argument(
+        "-o",
+        "--outfile",
+        help=f"output file name",
+        default=".",
+    )
+    args = parser.parse_args()
+    options = {}
+    if args.file:
+        options["file"] = args.file
+    if args.outfile:
+        options["outfile"] = args.outfile
+    if args.title:
+        options["plottitle"] = " ".join(args.title)
+    else:
+        options["plottitle"] = None
+
+    if args.variables:
+        options["vars"] = args.variables
+
+    if args.obsnetwork:
+        options["obsnetwork"] = args.obsnetwork
+
+    if args.removemodel:
+        options["removemodel"] = args.removemodel
+    else:
+        options["removemodel"] = []
+
+    plot(options)
+
+def plot(options):
     # file=Path("/home/jang/data/aeroval-local-web/remote-webserver/data/c3s/LTS_dual_view/map/AeronetSunV3L2-od550aer_Column_LTS.ADV-od550aer_1995-2022.json")
-    file = Path(INFILE)
-    if file.exists():
-        outfile = Path(OUTDIR) / f"{file.name}.png"
-        with open(file) as infile:
+    infile = Path(options["file"][0])
+    if infile.exists():
+        outfile = Path(options["outfile"])
+        with open(infile) as infile:
             json_dict = json.load(infile)
-        models = json_dict[modelvar][obsnetwork][datatype].keys()
+        # models = json_dict[modelvar][obsnetwork][datatype].keys()
+        models = []
         datadict = {}
         series = {}
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
         modelno=len(models)
-        for m_idx, model in enumerate(models):
+        for m_idx, model in enumerate(json_dict[modelvar][obsnetwork][datatype].keys()):
+            if model in options["removemodel"]:
+                continue
+            models.append(model)
             print(f"reading model {model}...")
             datadict[model] = dict(time=[])
             series[model] = {}
@@ -84,7 +162,8 @@ def main():
                         )
 
 
-
+            data_style = []
+            trend_style = []
             for key in datadict[model]:
                 if key == "time":
                     continue
@@ -92,6 +171,8 @@ def main():
                     continue
                 datadict[model][key]["val"] = np.array(datadict[model][key]["val"], dtype=float)
                 datadict[model][key]["time"] = np.array(datadict[model][key]["time"], dtype=float)
+                data_style.append(DATA_STYLE)
+                trend_style.append(TRENDS_STYLE)
                 # for _vidx, _val in enumerate(datadict[model][key]["val"]):
                 #     if _val is None:
                 #         datadict[model][key]["val"][_vidx] = np.nan
@@ -134,10 +215,14 @@ def main():
                 #                 ,)
                 # convert to pd.series
                 print(f"{model}.{key}")
+                if model in USER_FRIENDLY_MODEL_NAMES:
+                    prt_model = USER_FRIENDLY_MODEL_NAMES[model]
+                else:
+                    prt_model = model
                 series[model][key] = pd.Series(
                     data=datadict[model][key]["val"],
                     index=pd.to_datetime(datadict[model][key]["time"], unit='ms'),
-                    name=f"{model}",
+                    name=f"{prt_model}",
                 )
                 # plot = ax.plot(series[model][key])
                 # plot = ax.plot(
@@ -163,7 +248,7 @@ def main():
         # df = pd.concat([df_full, df_theil], axis=1)
         #
         plot = df_full.plot(
-            kind="line", ax=ax, color=default_colors, style=default_style
+            kind="line", ax=ax, color=DEFAULT_COLORS, style=DEFAULT_STYLE
         )
         idxs = [0, -1]
         plots = []
@@ -174,15 +259,16 @@ def main():
                 ax.plot(
                     pd.to_datetime(datadict[model][key]["time"], unit='ms'),
                     datadict[model][key]["theil_sen"],
-                    default_style[m_idx + modelno],
-                    color=default_colors[m_idx + modelno],
+                    TRENDS_STYLE,
+                    # DEFAULT_STYLE[m_idx + modelno],
+                    color=DEFAULT_COLORS[m_idx + modelno],
                     label=f"trend[1/10y]:{datadict[model][key]['trend']*10:-.3f};pval:{datadict[model][key]['pval']:.2f}",
                 )
             )
         dummy = ax.set_xlabel("time")
         dummy = ax.set_ylabel("mean absolute bias")
         # ax.set_ylim((None, 0.14))
-        dummy = ax.set_title(title)
+        dummy = ax.set_title(options["plottitle"])
 
         # pdtime = pd.to_datetime(datadict[model][key]["time"])
         # for idx, col in enumerate(df_theil):
@@ -193,7 +279,7 @@ def main():
         #     dummy = plt.plot(
         #         [pdtime[x] for x in idxs],
         #         df_theil[col].values[np.array([0, -1])],
-        #         color=default_colors[idx],
+        #         color=DEFAULT_COLORS[idx],
         #         linestyle="-",
         #     )
         #
@@ -203,7 +289,7 @@ def main():
 
         # resdf=df.resample("M").nearest()
         # outfile = Path(OUTDIR) / f"{file.name}.resampled.png"
-        # plot = resdf.plot.line(title="Theil-Sen trends of MAB",color=default_colors, style=default_style)
+        # plot = resdf.plot.line(title="Theil-Sen trends of MAB",color=DEFAULT_COLORS, style=DEFAULT_STYLE)
         # dummy=plot.set_xlabel("time")
         # dummy=plot.set_ylabel("mean absolute bias")
         # # dummy = plt.axhline(PLT_PARAM[options['statparameter'][0]]['axhline'], color='grey', linestyle='-')

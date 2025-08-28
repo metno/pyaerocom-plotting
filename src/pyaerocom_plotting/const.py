@@ -122,6 +122,12 @@ USER_FRIENDLY_MODEL_NAMES = {
     "IASI.MAPIR.LTS": "IASI.MAPIR",
     "IASI_ULB.v9.DN": "IASI.ULB",
     "IASI_ensemble.v1.4": "IASI.Ens",
+    "ADV.combined": "ADV/SDV",
+    "ORAC.combined": "ORAC",
+    "SU.combined": "SU",
+    "Ensemble.combined": "Ensemble",
+    "S4O.combined": "S4O",
+    "XBAER.combined": "XBAER",
 }
 
 USER_COLOURS = {
