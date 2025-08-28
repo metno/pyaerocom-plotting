@@ -16,12 +16,12 @@ from pyaerocom_plotting.plotting import Plotting
 
 
 
-modelvar = "od550aer"
-modelvar = "od550aer"
-obsnetwork = "AeronetSDAV3L2"
-obsnetwork = "AeronetSunV3L2"
+# modelvar = "od550aer"
+# modelvar = "od550aer"
+# obsnetwork = "AeronetSDAV3L2"
+# obsnetwork = "AeronetSunV3L2"
 datatype = "Column"
-obsvar = modelvar
+# obsvar = modelvar
 filter = "ALL"
 
 plot_stat_prop = "mab"
@@ -108,11 +108,14 @@ def main():
     else:
         options["removemodel"] = []
 
-    plot(options)
+    for _var in options["vars"]:
+        plot(_var, options)
 
-def plot(options):
+def plot(modelvar, options):
     # file=Path("/home/jang/data/aeroval-local-web/remote-webserver/data/c3s/LTS_dual_view/map/AeronetSunV3L2-od550aer_Column_LTS.ADV-od550aer_1995-2022.json")
     infile = Path(options["file"][0])
+    obsnetwork = options["obsnetwork"][0]
+    obsvar = modelvar
     if infile.exists():
         outfile = Path(options["outfile"])
         with open(infile) as infile:

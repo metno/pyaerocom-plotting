@@ -126,7 +126,7 @@ USER_FRIENDLY_MODEL_NAMES = {
     "ORAC.combined": "ORAC",
     "SU.combined": "SU",
     "Ensemble.combined": "Ensemble",
-    "S4O.combined": "S4O",
+    "S4O.combined": "S4M/S4O",
     "XBAER.combined": "XBAER",
 }
 
