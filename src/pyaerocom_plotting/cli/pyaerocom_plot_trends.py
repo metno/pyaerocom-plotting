@@ -80,6 +80,7 @@ def main():
     parser.add_argument("-t", "--title", help="plot title", nargs="+")
     parser.add_argument("-r", "--removemodel", help="models to remove from plot", nargs="+")
     parser.add_argument("-f", "--file", help="file to read", nargs=1)
+    parser.add_argument("-l", "--upperlimit", help="upper plot limit", nargs=1)
     parser.add_argument(
         "-o",
         "--outfile",
@@ -107,6 +108,11 @@ def main():
         options["removemodel"] = args.removemodel
     else:
         options["removemodel"] = []
+
+    if args.upperlimit:
+        options["upperlimit"] = args.upperlimit[0]
+    else:
+        options["upperlimit"] = None
 
     for _var in options["vars"]:
         plot(_var, options)
@@ -270,7 +276,10 @@ def plot(modelvar, options):
             )
         dummy = ax.set_xlabel("time")
         dummy = ax.set_ylabel("mean absolute bias")
-        # ax.set_ylim((None, 0.14))
+        if options["upperlimit"] is not None:
+            # ax.set_ylim((None, options["upperlimit"]))
+            ax.set_ylim((None, 0.14))
+
         dummy = ax.set_title(options["plottitle"])
 
         # pdtime = pd.to_datetime(datadict[model][key]["time"])
