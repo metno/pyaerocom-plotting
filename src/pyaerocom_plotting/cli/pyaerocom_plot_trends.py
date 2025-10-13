@@ -31,7 +31,7 @@ plot_stat_props = [plot_stat_prop]
 # INFILE = "/home/jang/data/aeroval-local-web/data/c3s/IASI_LTS/hm/ts/ALL-AeronetSDAV3L2-od550dust-Column.json"
 INFILE = "/home/jang/data/aeroval-local-web/data/c3s/combined.dual.view/hm/ts/ALL_AeronetSunV3L2_od550aer_Column.json"
 
-OUTDIR = "/home/jang/data/c3s2_aerosol/PQAR_202509/images"
+OUTDIR = "/home/jang/data/c3s2_aerosol/PQAD_202305_corrections/images"
 
 # DEFAULT_COLORS = "skyblue,black,lightgreen,skyblue,black,lightgreen".split(",")
 # DEFAULT_COLORS = "skyblue,black,lightgreen,orange,skyblue,black,lightgreen,orange".split(",")

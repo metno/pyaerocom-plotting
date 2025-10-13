@@ -271,9 +271,9 @@ class Plotting:
             ax.set_title(title, fontsize=20)
         else:
             try:
-                ax.set_title(f"scatterdensity {USER_FRIENDLY_VAR_NAMES[model_var]}", fontsize=20)
+                ax.set_title(f"scatter density {USER_FRIENDLY_VAR_NAMES[model_var]}", fontsize=20)
             except KeyError:
-                ax.set_title(f"scatterdensity {model_var}", fontsize=20)
+                ax.set_title(f"scatter density {model_var}", fontsize=20)
 
         cbar = fig.colorbar(
             mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
@@ -398,10 +398,10 @@ class Plotting:
                         user_mod_name = _model
 
                     if title is None:
-                        plt_title = f"{user_mod_name} {user_friendfly_var} {ts_data['time'].cell(0).point.year} {ts_type}"
+                        plt_title = f"{user_mod_name} {user_friendfly_var} {ts_type} mean year {ts_data['time'].cell(0).point.year}"
                     else:
                         plt_title = (
-                            f"{title} {ts_data['time'].cell(0).point.year} {ts_type}"
+                            f"{title} {ts_data['time'].cell(0).point.year} {ts_type} mean"
                         )
 
                     plt.title(plt_title, fontsize=20)

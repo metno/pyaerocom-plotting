@@ -84,11 +84,11 @@ USER_FRIENDLY_VAR_NAMES = {
     "zaerosol": "ALH",
 }
 USER_FRIENDLY_OBS_NAMES = {
-    "AeronetSunV3Lev2.daily": "Aeronet Sun",
-    "AeronetSDAV3Lev2.daily": "Aeronet SDA",
-    "AeronetInvV3Lev2.daily": "Aeronet INV",
-    "AeronetSunV3Lev2": "Aeronet Sun",
-    "AeronetSDAV3L2": "Aeronet SDA",
+    "AeronetSunV3Lev2.daily": "AERONET Sun",
+    "AeronetSDAV3Lev2.daily": "AERONET SDA",
+    "AeronetInvV3Lev2.daily": "AERONET INV",
+    "AeronetSunV3Lev2": "AERONET Sun",
+    "AeronetSDAV3L2": "AERONET SDA",
 }
 
 USER_FRIENDLY_MODEL_NAMES = {
