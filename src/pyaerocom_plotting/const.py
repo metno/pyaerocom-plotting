@@ -78,10 +78,10 @@ USER_FRIENDLY_VAR_NAMES = {
     "od550lt1aer": "FM AOD",
     "od550dust": "dust AOD",
     "ssa670aer": "SSA @ 670nm",
-    "proxyzdust": "DLH",
-    "zdust": "DLH",
-    "proxyzaerosol": "ALH",
-    "zaerosol": "ALH",
+    "proxyzdust": "dust layer height",
+    "zdust": "dust layer height",
+    "proxyzaerosol": "aerosol layer height",
+    "zaerosol": "aerosol layer height",
 }
 USER_FRIENDLY_OBS_NAMES = {
     "AeronetSunV3Lev2.daily": "AERONET Sun",
@@ -105,8 +105,8 @@ USER_FRIENDLY_MODEL_NAMES = {
     "OLCI_ensemble.v1.1": "OLCI.Ens",
     "OLCI_S4O_v2.0": "OLCI.S4O",
     "OLCI_XBAER_v1.0": "OLCI.XBAER",
-    "PARASOL_GRASP_V2.20": "PARASOL.GRASP",
-    "Parasol.Grasp": "PARASOL.GRASP",
+    "PARASOL_GRASP_V2.20": "GRASP",
+    "Parasol.Grasp": "GRASP",
     "SLSTR_ensemble.v2.3": "SLSTR.Ens",
     "SLSTR_ensemble.v2.4": "SLSTR.Ens",
     "SLSTR_ORAC_v1.00": "SLSTR.ORAC",
@@ -128,6 +128,13 @@ USER_FRIENDLY_MODEL_NAMES = {
     "Ensemble.combined": "Ensemble",
     "S4O.combined": "S4M/S4O",
     "XBAER.combined": "XBAER",
+}
+
+USER_FRIENDLY_TS_NAMES = {
+    "yearly": "annual",
+    "monthly": "monthly",
+    "daily": "daily",
+    "hourly": "hourly",
 }
 
 USER_COLOURS = {

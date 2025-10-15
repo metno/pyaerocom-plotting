@@ -15,6 +15,7 @@ from pyaerocom_plotting.const import (
     USER_FRIENDLY_MODEL_NAMES,
     USER_COLOURS,
     USER_YLIM,
+    USER_FRIENDLY_TS_NAMES,
 )
 from pyaerocom_plotting.readers import AerovalJsonData, PyaModelData
 
@@ -338,8 +339,8 @@ class Plotting:
                     colormap = self.var_ranges_defaults[_var]["colmap"]
                 cmap = mpl.colormaps[colormap]
                 bounds = self.var_ranges_defaults[_var]["scale"]
-                norm = mpl.colors.BoundaryNorm(bounds, cmap.N, extend="both")
-                # norm = mpl.colors.BoundaryNorm(bounds, cmap.N, extend="max")
+                # norm = mpl.colors.BoundaryNorm(bounds, cmap.N, extend="both")
+                norm = mpl.colors.BoundaryNorm(bounds, cmap.N, extend="max")
                 # norm = mpl.colors.Normalize(vmin=0, vmax=2)
 
                 mdata[_model][_var] = model_obj.data[_model][_var].resample_time(
@@ -398,10 +399,10 @@ class Plotting:
                         user_mod_name = _model
 
                     if title is None:
-                        plt_title = f"{user_mod_name} {user_friendfly_var} {ts_type} mean year {ts_data['time'].cell(0).point.year}"
+                        plt_title = f"{user_mod_name} {user_friendfly_var} {USER_FRIENDLY_TS_NAMES[ts_type]} mean ({ts_data['time'].cell(0).point.year})"
                     else:
                         plt_title = (
-                            f"{title} {ts_data['time'].cell(0).point.year} {ts_type} mean"
+                            f"{title} {ts_data['time'].cell(0).point.year} {USER_FRIENDLY_TS_NAMES[ts_type]} mean"
                         )
 
                     plt.title(plt_title, fontsize=20)
