@@ -277,8 +277,8 @@ def plot(modelvar, options):
         dummy = ax.set_xlabel("time")
         dummy = ax.set_ylabel("mean absolute bias")
         if options["upperlimit"] is not None:
-            # ax.set_ylim((None, options["upperlimit"]))
-            ax.set_ylim((None, 0.14))
+            ax.set_ylim((None, float(options["upperlimit"])))
+            # ax.set_ylim((None, 0.14))
 
         dummy = ax.set_title(options["plottitle"])
 
