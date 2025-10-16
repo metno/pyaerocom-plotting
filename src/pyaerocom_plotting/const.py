@@ -62,9 +62,9 @@ GCOS_CRITERION_V2 = dict(
         threshold={"gcos_err_percent": 0.2, "gcos_abs_err": 0.06},
     ),
     od550lt1aer=dict(
-        goal={"gcos_err_percent": 0.04, "gcos_abs_err": 0.02},
-        breakthrough={"gcos_err_percent": 0.1, "gcos_abs_err": 0.03},
-        threshold={"gcos_err_percent": 0.2, "gcos_abs_err": 0.06},
+        goal={"gcos_err_percent": 0.04, "gcos_abs_err": 0.01},
+        breakthrough={"gcos_err_percent": 0.1, "gcos_abs_err": 0.015},
+        threshold={"gcos_err_percent": 0.2, "gcos_abs_err": 0.03},
     ),
     ssa670aer=dict(
         goal={"gcos_err_percent": np.nan, "gcos_abs_err": 0.1},
