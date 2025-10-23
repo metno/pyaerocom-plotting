@@ -31,19 +31,21 @@ class Plotting:
     def __init__(self, plotdir: [str, Path], var_scale_file=None):
         self._plotdir = plotdir
         if var_scale_file:
-            self.var_ranges_defaults = VarWebScaleAndColormap(config_file=var_scale_file)
+            self.var_ranges_defaults = VarWebScaleAndColormap(
+                config_file=var_scale_file
+            )
         else:
             self.var_ranges_defaults = var_ranges_defaults
 
     def plot_scatter(
-            self,
-            plot_obj: ColocatedData,
-            title: str = None,
-            plot_gcos=True,
-            gcos_err_percent: float = 0.1,
-            gcos_abs_err: float = 0.03,
-            plot_log=False,
-            **kwargs,
+        self,
+        plot_obj: ColocatedData,
+        title: str = None,
+        plot_gcos=True,
+        gcos_err_percent: float = 0.1,
+        gcos_abs_err: float = 0.03,
+        plot_log=False,
+        **kwargs,
     ):
         """method to plot scatterplots using pyaerocom
 
@@ -152,15 +154,15 @@ class Plotting:
         pass
 
     def plot_scatterdensity(
-            self,
-            plot_obj: ColocatedData,
-            title: str = None,
-            plot_gcos=True,
-            colormap: str = "viridis_r",
-            gcos_color="black",
-            gcos_err_percent: float = 0.1,
-            gcos_abs_err: float = 0.03,
-            **kwargs,
+        self,
+        plot_obj: ColocatedData,
+        title: str = None,
+        plot_gcos=True,
+        colormap: str = "viridis_r",
+        gcos_color="black",
+        gcos_err_percent: float = 0.1,
+        gcos_abs_err: float = 0.03,
+        **kwargs,
     ):
         """method to plot scatterplots using pyaerocom
 
@@ -203,7 +205,6 @@ class Plotting:
         cmap = mpl.colors.ListedColormap(
             cmcolors, name="griesiemap", N=cmcolors.shape[0]
         )
-
 
         hist_data = np.histogram2d(model_data, obs_data, bins=bins)
         hist_data[0][hist_data[0] == 0] = -1
@@ -258,7 +259,9 @@ class Plotting:
         ax.set_aspect("equal")
 
         ax.plot(xlim, ylim, color="black", linewidth=1, linestyle="--")
-        ax.tick_params(labelsize=14, )
+        ax.tick_params(
+            labelsize=14,
+        )
         if plot_gcos and model_var in GCOS_CRITERION_V2:
             pass
             plots.append(
@@ -272,7 +275,9 @@ class Plotting:
             ax.set_title(title, fontsize=20)
         else:
             try:
-                ax.set_title(f"scatter density {USER_FRIENDLY_VAR_NAMES[model_var]}", fontsize=20)
+                ax.set_title(
+                    f"scatter density {USER_FRIENDLY_VAR_NAMES[model_var]}", fontsize=20
+                )
             except KeyError:
                 ax.set_title(f"scatter density {model_var}", fontsize=20)
 
@@ -283,10 +288,10 @@ class Plotting:
             aspect=15,
             extend="max",
             label="number of occurrences",
-
-
         )
-        cbar.ax.tick_params(labelsize=15, )
+        cbar.ax.tick_params(
+            labelsize=15,
+        )
         cbar.set_label("number of occurrences", size=15)
         try:
             plt.ylabel(f"{USER_FRIENDLY_MODEL_NAMES[model_name]}", fontsize=20)
@@ -306,13 +311,13 @@ class Plotting:
         plt.close()
 
     def plot_pixel_map(
-            self,
-            model_obj: PyaModelData,
-            ts_type: str = "yearly",
-            title: str = None,
-            colormap: str = None,
-            plot_grid: bool = False,
-            var_scale_file: str = None,
+        self,
+        model_obj: PyaModelData,
+        ts_type: str = "yearly",
+        title: str = None,
+        colormap: str = None,
+        plot_grid: bool = False,
+        var_scale_file: str = None,
     ):
         """method to plot pixelmaps
 
@@ -368,8 +373,10 @@ class Plotting:
                             aspect=15,
                             # extend="max",
                         )
-                        cbar.ax.tick_params(labelsize=15, )
-                        cbar.set_label(str(ts_data.unit) , size=15)
+                        cbar.ax.tick_params(
+                            labelsize=15,
+                        )
+                        cbar.set_label(str(ts_data.unit), size=15)
 
                     else:
                         cbar = fig.colorbar(
@@ -379,7 +386,9 @@ class Plotting:
                             aspect=15,
                             extend="max",
                         )
-                        cbar.ax.tick_params(labelsize=15, )
+                        cbar.ax.tick_params(
+                            labelsize=15,
+                        )
 
                     if ts_type == "monthly":
                         filename = f"{self._plotdir}/pixelmap_{_model}_{_var}_m{ts_data['time'].cell(0).point.month:02}{ts_data['time'].cell(0).point.year}_{ts_type}.png"
@@ -401,9 +410,7 @@ class Plotting:
                     if title is None:
                         plt_title = f"{user_mod_name} {user_friendfly_var} {USER_FRIENDLY_TS_NAMES[ts_type]} mean ({ts_data['time'].cell(0).point.year})"
                     else:
-                        plt_title = (
-                            f"{title} {ts_data['time'].cell(0).point.year} {USER_FRIENDLY_TS_NAMES[ts_type]} mean"
-                        )
+                        plt_title = f"{title} {ts_data['time'].cell(0).point.year} {USER_FRIENDLY_TS_NAMES[ts_type]} mean"
 
                     plt.title(plt_title, fontsize=20)
                     plots.append(iplt.pcolormesh(ts_data.cube, norm=norm, cmap=cmap))
@@ -415,7 +422,9 @@ class Plotting:
                     ax.set_yticks(yticks)
                     ax.set_yticklabels(ylabels)
                     ax.set_xticks(xticks)
-                    ax.tick_params(labelsize=14, )
+                    ax.tick_params(
+                        labelsize=14,
+                    )
                     ax.set_xticklabels(xlabels)
                     # ax.set_yticks(np.arange(0, 100.1, 100/3))
                     ax.set_xlabel("longitude", fontsize=20)
@@ -614,11 +623,11 @@ class Plotting:
             plt.close()
 
     def plot_aeroval_overall_time_series_SU_Paper(
-            self,
-            json_data: AerovalJsonData,
-            stat_prop: str = "data_mean",
-            title: str = None,
-            colours: list[str] = [],
+        self,
+        json_data: AerovalJsonData,
+        stat_prop: str = "data_mean",
+        title: str = None,
+        colours: list[str] = [],
     ):
         """method to plot the time series plot from aeroval's overall evaluation
         SPECIAL version for SU paper!!"""
@@ -724,10 +733,10 @@ class Plotting:
         # print(_midx)
 
     def plot_aeroval_overall_time_series(
-            self,
-            json_data: AerovalJsonData,
-            stat_prop: str = "data_mean",
-            title: str = None,
+        self,
+        json_data: AerovalJsonData,
+        stat_prop: str = "data_mean",
+        title: str = None,
     ):
         """method to plot the time series plot from aeroval's overall evaluation"""
         import matplotlib.pyplot as plt
@@ -795,10 +804,10 @@ class Plotting:
         pass
 
     def plot_aeroval_evaluation_time_series(
-            self,
-            json_data: dict,
-            experiment_name: str = "Layer_Heights",
-            title: str = None,
+        self,
+        json_data: dict,
+        experiment_name: str = "Layer_Heights",
+        title: str = None,
     ):
         """method to plot the time series plot from aeroval's evaluation
         lower left panel"""
@@ -808,7 +817,9 @@ class Plotting:
         for _midx, _model in enumerate(json_data):
             # fig, ax = plt.subplots()
             # fig = plt.figure(figsize=(16, 9), layout="constrained")
-            fig = plt.figure(figsize=(16, 9),)
+            fig = plt.figure(
+                figsize=(16, 9),
+            )
             ax = fig.add_subplot(1, 1, 1)
             # ax = fig.add_axes([0.15, 0.15, 0.8, 0.75])
 
@@ -885,7 +896,9 @@ class Plotting:
             except KeyError:
                 pass
 
-            ax.tick_params(labelsize=18, )
+            ax.tick_params(
+                labelsize=18,
+            )
             filename = f"{self._plotdir}/evalts_{plot_var_name}_{stat_name}_{experiment_name}-{_model}.png"
             print(f"saving file: {filename}")
             plt.savefig(filename, dpi=self.DEFAULT_DPI)
