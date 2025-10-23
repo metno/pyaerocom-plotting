@@ -5,6 +5,7 @@ besides the current PyaModelData class there will be classes to read
 - colocated data (netcdf files)
 - aeroval json files
 """
+
 from collections.abc import Iterable
 from pathlib import Path
 

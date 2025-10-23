@@ -11,9 +11,13 @@ import subprocess
 import sys
 from tempfile import mkdtemp
 
-from pyaerocom_plotting.const import DEFAULT_OUTPUT_DIR, DEFAULT_TS_TYPE, PLOT_NAMES, USER_FRIENDLY_MODEL_NAMES
+from pyaerocom_plotting.const import (
+    DEFAULT_OUTPUT_DIR,
+    DEFAULT_TS_TYPE,
+    PLOT_NAMES,
+    USER_FRIENDLY_MODEL_NAMES,
+)
 from pyaerocom_plotting.plotting import Plotting
-
 
 
 # modelvar = "od550aer"
@@ -35,17 +39,20 @@ OUTDIR = "/home/jang/data/c3s2_aerosol/PQAD_202305_corrections/images"
 
 # DEFAULT_COLORS = "skyblue,black,lightgreen,skyblue,black,lightgreen".split(",")
 # DEFAULT_COLORS = "skyblue,black,lightgreen,orange,skyblue,black,lightgreen,orange".split(",")
-DEFAULT_COLORS = "skyblue,black,lightgreen,orange,darkviolet,skyblue,black,lightgreen,orange,darkviolet".split(",")
+DEFAULT_COLORS = "skyblue,black,lightgreen,orange,darkviolet,skyblue,black,lightgreen,orange,darkviolet".split(
+    ","
+)
 # DEFAULT_STYLE = "-,-,-,--,--,--,--".split(",")
 # DEFAULT_STYLE = "-,-,-,-,--,--,--,--,--".split(",")
 DEFAULT_STYLE = "-,-,-,-,-,--,--,--,--,--,--".split(",")
 DATA_STYLE = "-"
 TRENDS_STYLE = "--"
-ms_per_year = 1.e3*60*60*24*365
+ms_per_year = 1.0e3 * 60 * 60 * 24 * 365
 # title="AOD - ALL - 1995-2022"
 # title="AOD - ALL - 2003-2018"
-title="dust AOD - ALL - 2007-2013"
-subtitle=""
+title = "dust AOD - ALL - 2007-2013"
+subtitle = ""
+
 
 def main():
     # define some terminal colors to be used in the help
@@ -78,7 +85,9 @@ def main():
     parser.add_argument("-v", "--variables", help="variable(s) to read", nargs="+")
     parser.add_argument("--obsnetwork", help="obs network to read", nargs=1)
     parser.add_argument("-t", "--title", help="plot title", nargs="+")
-    parser.add_argument("-r", "--removemodel", help="models to remove from plot", nargs="+")
+    parser.add_argument(
+        "-r", "--removemodel", help="models to remove from plot", nargs="+"
+    )
     parser.add_argument("-f", "--file", help="file to read", nargs=1)
     parser.add_argument("-l", "--upperlimit", help="upper plot limit", nargs=1)
     parser.add_argument(
@@ -117,6 +126,7 @@ def main():
     for _var in options["vars"]:
         plot(_var, options)
 
+
 def plot(modelvar, options):
     # file=Path("/home/jang/data/aeroval-local-web/remote-webserver/data/c3s/LTS_dual_view/map/AeronetSunV3L2-od550aer_Column_LTS.ADV-od550aer_1995-2022.json")
     infile = Path(options["file"][0])
@@ -132,7 +142,7 @@ def plot(modelvar, options):
         series = {}
         fig = plt.figure()
         ax = fig.add_subplot(1, 1, 1)
-        modelno=len(models)
+        modelno = len(models)
         for m_idx, model in enumerate(json_dict[modelvar][obsnetwork][datatype].keys()):
             if model in options["removemodel"]:
                 continue
@@ -149,8 +159,8 @@ def plot(modelvar, options):
                     filter
                 ][time]:
                     val = json_dict[modelvar][obsnetwork][datatype][model][obsvar][
-                                filter
-                            ][time][key]
+                        filter
+                    ][time][key]
 
                     try:
                         datadict[model][key]["time"].append(float(time))
@@ -165,11 +175,12 @@ def plot(modelvar, options):
                         datadict[model][key] = dict(
                             time=[float(time)],
                             # val=[val],
-                            val=[json_dict[modelvar][obsnetwork][datatype][model][obsvar][
-                                filter
-                            ][time][key]],
+                            val=[
+                                json_dict[modelvar][obsnetwork][datatype][model][
+                                    obsvar
+                                ][filter][time][key]
+                            ],
                         )
-
 
             data_style = []
             trend_style = []
@@ -178,8 +189,12 @@ def plot(modelvar, options):
                     continue
                 if key not in plot_stat_props:
                     continue
-                datadict[model][key]["val"] = np.array(datadict[model][key]["val"], dtype=float)
-                datadict[model][key]["time"] = np.array(datadict[model][key]["time"], dtype=float)
+                datadict[model][key]["val"] = np.array(
+                    datadict[model][key]["val"], dtype=float
+                )
+                datadict[model][key]["time"] = np.array(
+                    datadict[model][key]["time"], dtype=float
+                )
                 data_style.append(DATA_STYLE)
                 trend_style.append(TRENDS_STYLE)
                 # for _vidx, _val in enumerate(datadict[model][key]["val"]):
@@ -187,8 +202,9 @@ def plot(modelvar, options):
                 #         datadict[model][key]["val"][_vidx] = np.nan
                 # add theilslope data
                 datadict[model][key]["theil_result"] = theilslopes(
-                    datadict[model][key]["val"], x=datadict[model][key]["time"],
-                    nan_policy='omit',
+                    datadict[model][key]["val"],
+                    x=datadict[model][key]["time"],
+                    nan_policy="omit",
                 )
                 datadict[model][key]["theil_sen"] = datadict[model][key][
                     "theil_result"
@@ -207,7 +223,7 @@ def plot(modelvar, options):
                 datadict[model][key]["trend"] = (
                     datadict[model][key]["diff"]
                     / datadict[model][key]["time_diff"]
-                    *ms_per_year
+                    * ms_per_year
                 )
                 datadict[model][key]["kendalltau_result"] = kendalltau(
                     datadict[model][key]["time"],
@@ -230,7 +246,7 @@ def plot(modelvar, options):
                     prt_model = model
                 series[model][key] = pd.Series(
                     data=datadict[model][key]["val"],
-                    index=pd.to_datetime(datadict[model][key]["time"], unit='ms'),
+                    index=pd.to_datetime(datadict[model][key]["time"], unit="ms"),
                     name=f"{prt_model}",
                 )
                 # plot = ax.plot(series[model][key])
@@ -266,7 +282,7 @@ def plot(modelvar, options):
             print(f"{model}:{datadict[model][key]['trend']}")
             plots.append(
                 ax.plot(
-                    pd.to_datetime(datadict[model][key]["time"], unit='ms'),
+                    pd.to_datetime(datadict[model][key]["time"], unit="ms"),
                     datadict[model][key]["theil_sen"],
                     TRENDS_STYLE,
                     # DEFAULT_STYLE[m_idx + modelno],

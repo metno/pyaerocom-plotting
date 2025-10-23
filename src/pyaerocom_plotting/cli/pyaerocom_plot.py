@@ -42,7 +42,10 @@ def main():
     parser.add_argument("-m", "--models", help="models(s) to read", nargs="+")
     parser.add_argument("-t", "--title", help="plot title", nargs="+")
     parser.add_argument("-p", "--plottype", help="plot type(s) to plot", nargs="+")
-    parser.add_argument("--varscalefile", help="user defined variable scale file",)
+    parser.add_argument(
+        "--varscalefile",
+        help="user defined variable scale file",
+    )
     parser.add_argument(
         "-l", "--list", help="list supported plot types", action="store_true"
     )

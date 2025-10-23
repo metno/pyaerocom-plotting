@@ -42,7 +42,10 @@ def main():
 """,
     )
     parser.add_argument("-f", "--file", help="file to read")
-    parser.add_argument("--varscalefile", help="user defined variable scale file",)
+    parser.add_argument(
+        "--varscalefile",
+        help="user defined variable scale file",
+    )
     parser.add_argument(
         "-g", "--gcos", help="plot gcos fraction lines", action="store_true"
     )
