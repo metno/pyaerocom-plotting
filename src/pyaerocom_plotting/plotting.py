@@ -1,20 +1,323 @@
 from pathlib import Path
 
+import cartopy.crs as ccrs
+import cartopy.feature as cf
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+from pyaerocom import ColocatedData
+from pyaerocom.aeroval.glob_defaults import VarWebScaleAndColormap
+
+from pyaerocom_plotting.const import GCOS_CRITERION_V2
+from pyaerocom_plotting.const import (
+    USER_FRIENDLY_VAR_NAMES,
+    USER_FRIENDLY_OBS_NAMES,
+    USER_FRIENDLY_MODEL_NAMES,
+    USER_COLOURS,
+    USER_YLIM,
+    USER_FRIENDLY_TS_NAMES,
+)
 from pyaerocom_plotting.readers import AerovalJsonData, PyaModelData
+
+var_ranges_defaults = VarWebScaleAndColormap()
 
 
 class Plotting:
     """plotting class with methods for each supported plot"""
 
-    __version__ = "0.0.2"
+    __version__ = "0.0.3"
     DEFAULT_DPI = 300
 
-    def __init__(self, plotdir: [str, Path]):
+    def __init__(self, plotdir: [str, Path], var_scale_file=None):
         self._plotdir = plotdir
+        if var_scale_file:
+            self.var_ranges_defaults = VarWebScaleAndColormap(
+                config_file=var_scale_file
+            )
+        else:
+            self.var_ranges_defaults = var_ranges_defaults
+
+    def plot_scatter(
+        self,
+        plot_obj: ColocatedData,
+        title: str = None,
+        plot_gcos=True,
+        gcos_err_percent: float = 0.1,
+        gcos_abs_err: float = 0.03,
+        plot_log=False,
+        **kwargs,
+    ):
+        """method to plot scatterplots using pyaerocom
+
+        due to lack of pyaerocom API documentation this uses the iris infrastructure which is also
+        retained in pyaerocom's GriddedData object
+        """
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        # gcos_err_percent = 0.1
+        # gcos_abs_err = 0.03
+        # gcos_ stuff
+        gcos_x_data_low = np.arange(19) * 0.005 + 0.005
+        gcos_x_data_middle = np.arange(19) * 0.05 + 0.1
+        gcos_x_data_high = np.arange(19) * 0.5 + 1.0
+        gcos_x_data = np.array(
+            [gcos_x_data_low, gcos_x_data_middle, gcos_x_data_high]
+        ).flatten()
+        if np.isnan(gcos_err_percent):
+            # absolute GCOS criterion only
+            gcos_y_data = np.add(gcos_x_data, gcos_abs_err)
+        else:
+            gcos_y_data = np.add(
+                gcos_x_data, np.multiply(gcos_x_data, gcos_err_percent)
+            )
+            # gcos_y_data = np.multiply(gcos_x_data, gcos_err_percent)
+            gcos_y_data[gcos_y_data <= gcos_abs_err] = gcos_abs_err
+            # i_DummyArr = where(f_GCOSYDataDiffpercent lt fC_GCOSAbsCrit / fC_GCOSPercentCrit, i_Dummy)
+            # i_MinPercentVal = f_GCOSYDataDiffpercent[i_DummyArr[-1] + 1]
+            # if i_Dummy gt 0 then f_GCOSYDataDiffpercent[i_DummyArr]=f_GCOSXData[i_DummyArr]+fC_GCOSAbsCrit
+
+        fig = plt.figure(
+            figsize=(12, 12),
+        )
+        ax = fig.add_subplot(1, 1, 1)
+
+        plots = []
+        obs_data = plot_obj.data.data[0, :, :].flatten()
+        obs_name = plot_obj.metadata["data_source"][0]
+        model_data = plot_obj.data.data[1, :, :].flatten()
+        model_name = plot_obj.metadata["data_source"][1]
+        aerocom_var_name = plot_obj.var_name[1]
+        model_var = plot_obj.var_name[1]
+        upper_var_val = max(self.var_ranges_defaults[model_var]["scale"])
+        lower_var_val = min(self.var_ranges_defaults[model_var]["scale"])
+
+        # xlim = [0.01, int(np.ceil(np.nanmax(model_data)))]
+        # ylim = [0.01, int(np.ceil(np.nanmax(obs_data)))]
+
+        if plot_log:
+            ax.set_yscale("log")
+            ax.set_xscale("log")
+            xlim = [0.01, 10.0]
+            ylim = [0.01, 10.0]
+        else:
+            xlim = [lower_var_val, upper_var_val]
+            ylim = [lower_var_val, upper_var_val]
+        # xlim=(0,6), ylim=(0.6)
+        plots.append(
+            ax.scatter(
+                obs_data,
+                model_data,
+                marker="+",
+                color="black",
+            )
+        )
+        # ax.hexbin(x, y, gridsize=20)
+        if plot_gcos and model_var in GCOS_CRITERION_V2:
+            pass
+            plots.append(
+                ax.plot(gcos_x_data, gcos_y_data, color="lightgreen", linewidth=3)
+            )
+            plots.append(
+                ax.plot(gcos_y_data, gcos_x_data, color="lightgreen", linewidth=3)
+            )
+
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+        # ax.plot([xlim[0], ylim[0]], [xlim[-1], ylim[-1]], color="grey", linewidth=1, linestyle="--")
+        ax.plot(xlim, ylim, color="grey", linewidth=2, linestyle="--")
+        if title is not None:
+            ax.set_title(title)
+        else:
+            try:
+                ax.set_title(f"scatter plot  {USER_FRIENDLY_VAR_NAMES[model_var]}")
+            except KeyError:
+                ax.set_title(f"scatter plot {model_var}")
+
+        try:
+            plt.ylabel(f"{USER_FRIENDLY_MODEL_NAMES[model_name]}")
+        except KeyError:
+            plt.ylabel(f"{model_name}")
+
+        try:
+            plt.xlabel(f"{USER_FRIENDLY_OBS_NAMES[obs_name]}")
+        except KeyError:
+            plt.xlabel(f"{obs_name}")
+
+        ax.set_aspect("equal")
+        filename = f"{self._plotdir}/scatter_{model_name}-{obs_name}.png"
+        print(f"saving file: {filename}")
+        plt.savefig(filename, dpi=self.DEFAULT_DPI)
+        plt.close()
+
+        pass
+
+    def plot_scatterdensity(
+        self,
+        plot_obj: ColocatedData,
+        title: str = None,
+        plot_gcos=True,
+        colormap: str = "viridis_r",
+        gcos_color="black",
+        gcos_err_percent: float = 0.1,
+        gcos_abs_err: float = 0.03,
+        **kwargs,
+    ):
+        """method to plot scatterplots using pyaerocom
+
+        due to lack of pyaerocom API documentation this uses the iris infrastructure which is also
+        retained in pyaerocom's GriddedData object
+        """
+        import pandas as pd
+
+        fig = plt.figure(
+            figsize=(12, 12),
+        )
+        ax = fig.add_subplot(1, 1, 1)
+
+        gcos_x_data_low = np.arange(19) * 0.005 + 0.005
+        gcos_x_data_middle = np.arange(19) * 0.05 + 0.1
+        gcos_x_data_high = np.arange(19) * 0.5 + 1.0
+        gcos_x_data = np.array(
+            [gcos_x_data_low, gcos_x_data_middle, gcos_x_data_high]
+        ).flatten()
+        gcos_y_data = np.add(gcos_x_data, np.multiply(gcos_x_data, gcos_err_percent))
+        # gcos_y_data = np.multiply(gcos_x_data, gcos_err_percent)
+        gcos_y_data[gcos_y_data <= gcos_abs_err] = gcos_abs_err
+
+        plots = []
+        obs_data = plot_obj.data.data[0, :, :].flatten()
+        obs_name = plot_obj.metadata["data_source"][0]
+        model_data = plot_obj.data.data[1, :, :].flatten()
+        model_name = plot_obj.metadata["data_source"][1]
+        model_var = plot_obj.var_name[1]
+        upper_var_val = max(self.var_ranges_defaults[model_var]["scale"])
+
+        # cmap = mpl.colormaps[colormap]
+        bins = (
+            np.arange(0, upper_var_val + 0.05, 0.05),
+            np.arange(0, upper_var_val + 0.05, 0.05),
+        )
+        # hist_data = np.histogram2d(model_data, obs_data, bins=bins)[0]
+        cmcolors = mpl.colormaps[colormap](np.arange(256))
+        cmcolors[0] = np.ones(4)
+        cmap = mpl.colors.ListedColormap(
+            cmcolors, name="griesiemap", N=cmcolors.shape[0]
+        )
+
+        hist_data = np.histogram2d(model_data, obs_data, bins=bins)
+        hist_data[0][hist_data[0] == 0] = -1
+
+        # bounds = self.var_ranges_defaults[_var]['scale']
+        # bounds = np.array((  0,  10,  20,  30,  40,  50,  60,  70,  80,  90, 100,  200, 300, 400, 500, 1000, 2000, 3000, 4000, 5000), dtype=float)
+        bounds = np.array(
+            (
+                1,
+                10,
+                20,
+                30,
+                40,
+                50,
+                60,
+                70,
+                80,
+                90,
+                100,
+                200,
+                300,
+                400,
+                500,
+                1000,
+                2000,
+            ),
+            dtype=float,
+        )
+        norm = mpl.colors.BoundaryNorm(
+            bounds,
+            cmap.N,
+            extend="both",
+        )
+        # norm = mpl.colors.Normalize(vmin=0, vmax=hist_data.max())
+        # norm = mpl.colors.LogNorm(vmin=0.01, vmax=hist_data.max())
+        # ax.scatter(x, y, s=sizes, c=colors, vmin=0, vmax=100)
+        # plots.append(ax.hist2d(model_data, obs_data, bins=bins, cmap=cmap, norm=norm))
+        plots.append(
+            ax.pcolormesh(
+                hist_data[1], hist_data[2], hist_data[0], cmap=cmap, norm=norm
+            )
+        )
+        # ax.hexbin(x, y, gridsize=20)
+        xlim = [0.0, upper_var_val]
+        ylim = [0.0, upper_var_val]
+        # ax.set_yticks(bins[0])
+        # ax.set_yticklabels(ylabels)
+        # ax.set_xticks(bins[1])
+        # ax.set_xticklabels(xlabels)
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+        ax.set_aspect("equal")
+
+        ax.plot(xlim, ylim, color="black", linewidth=1, linestyle="--")
+        ax.tick_params(
+            labelsize=14,
+        )
+        if plot_gcos and model_var in GCOS_CRITERION_V2:
+            pass
+            plots.append(
+                ax.plot(gcos_x_data, gcos_y_data, color=gcos_color, linewidth=1.5)
+            )
+            plots.append(
+                ax.plot(gcos_y_data, gcos_x_data, color=gcos_color, linewidth=1.5)
+            )
+
+        if title is not None:
+            ax.set_title(title, fontsize=20)
+        else:
+            try:
+                ax.set_title(
+                    f"scatter density {USER_FRIENDLY_VAR_NAMES[model_var]}", fontsize=20
+                )
+            except KeyError:
+                ax.set_title(f"scatter density {model_var}", fontsize=20)
+
+        cbar = fig.colorbar(
+            mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+            ax=ax,
+            orientation="vertical",
+            aspect=15,
+            extend="max",
+            label="number of occurrences",
+        )
+        cbar.ax.tick_params(
+            labelsize=15,
+        )
+        cbar.set_label("number of occurrences", size=15)
+        try:
+            plt.ylabel(f"{USER_FRIENDLY_MODEL_NAMES[model_name]}", fontsize=20)
+        except KeyError:
+            plt.ylabel(f"{model_name}", fontsize=20)
+
+        try:
+            plt.xlabel(f"{USER_FRIENDLY_OBS_NAMES[obs_name]}", fontsize=20)
+        except KeyError:
+            plt.xlabel(f"{obs_name}", fontsize=20)
+
+        startdate = pd.to_datetime(str(plot_obj.time.data.min())).strftime("%Y%m%d")
+        enddate = pd.to_datetime(str(plot_obj.time.data.max())).strftime("%Y%m%d")
+        filename = f"{self._plotdir}/scatterdensity_{model_var}_{model_name}-{obs_name}-{startdate}-{enddate}.png"
+        print(f"saving file: {filename}")
+        plt.savefig(filename, dpi=self.DEFAULT_DPI)
+        plt.close()
 
     def plot_pixel_map(
         self,
         model_obj: PyaModelData,
+        ts_type: str = "yearly",
+        title: str = None,
+        colormap: str = None,
+        plot_grid: bool = False,
+        var_scale_file: str = None,
     ):
         """method to plot pixelmaps
 
@@ -22,28 +325,111 @@ class Plotting:
         retained in pyaerocom's GriddedData object
         """
 
-        import iris
-        import iris.analysis.cartography
         import iris.plot as iplt
-        import iris.quickplot as qplt
-        import matplotlib.pyplot as plt
 
+        crs_latlon = ccrs.PlateCarree()
         # this will be a monthly plot for now
         # create monthly plot data
         mdata = {}
-        ts_type = "monthly"
+        # ts_type = "monthly"
+        yticks = np.arange(-90, 91, 30)
+        ylabels = [f"{x:-2.0f}°" for x in yticks]
+        xticks = np.arange(-180, 181, 30)
+        xlabels = [f"{x:-2.0f}°" for x in xticks]
+
         for _model in model_obj.models:
             mdata[_model] = {}
             for _var in model_obj.variables:
+                if colormap is None:
+                    colormap = self.var_ranges_defaults[_var]["colmap"]
+                cmap = mpl.colormaps[colormap]
+                bounds = self.var_ranges_defaults[_var]["scale"]
+                # norm = mpl.colors.BoundaryNorm(bounds, cmap.N, extend="both")
+                norm = mpl.colors.BoundaryNorm(bounds, cmap.N, extend="max")
+                # norm = mpl.colors.Normalize(vmin=0, vmax=2)
+
                 mdata[_model][_var] = model_obj.data[_model][_var].resample_time(
                     ts_type
                 )
                 # loop through the resulting time steps
                 for _idx in range(mdata[_model][_var]["time"].points.size):
+                    plots = []
+
+                    fig = plt.figure(
+                        figsize=(16, 9),
+                    )
+
+                    # ax = fig.add_subplot(1, 1, 1)
+                    ax = plt.axes(projection=crs_latlon)
+
                     ts_data = mdata[_model][_var][_idx]
-                    filename = f"{self._plotdir}/pixelmap_{_model}_{_var}_m{ts_data['time'].cell(0).point.month:02}{ts_data['time'].cell(0).point.year}_{ts_type}.png"
-                    qplt.pcolormesh(ts_data.cube)
-                    plt.gca().coastlines()
+                    unit = str(ts_data.unit)
+                    if unit != "1":
+                        cbar = fig.colorbar(
+                            mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+                            ax=ax,
+                            orientation="vertical",
+                            label=str(ts_data.unit),
+                            aspect=15,
+                            # extend="max",
+                        )
+                        cbar.ax.tick_params(
+                            labelsize=15,
+                        )
+                        cbar.set_label(str(ts_data.unit), size=15)
+
+                    else:
+                        cbar = fig.colorbar(
+                            mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+                            ax=ax,
+                            orientation="vertical",
+                            aspect=15,
+                            extend="max",
+                        )
+                        cbar.ax.tick_params(
+                            labelsize=15,
+                        )
+
+                    if ts_type == "monthly":
+                        filename = f"{self._plotdir}/pixelmap_{_model}_{_var}_m{ts_data['time'].cell(0).point.month:02}{ts_data['time'].cell(0).point.year}_{ts_type}.png"
+                    elif ts_type == "yearly":
+                        filename = f"{self._plotdir}/pixelmap_{_model}_{_var}_y{ts_data['time'].cell(0).point.year}_{ts_type}.png"
+                    else:
+                        raise ValueError(f"Unrecognized ts_type: {ts_type}")
+
+                    try:
+                        user_friendfly_var = USER_FRIENDLY_VAR_NAMES[_var]
+                    except KeyError:
+                        user_friendfly_var = _var
+
+                    try:
+                        user_mod_name = USER_FRIENDLY_MODEL_NAMES[_model]
+                    except KeyError:
+                        user_mod_name = _model
+
+                    if title is None:
+                        plt_title = f"{user_mod_name} {user_friendfly_var} {USER_FRIENDLY_TS_NAMES[ts_type]} mean ({ts_data['time'].cell(0).point.year})"
+                    else:
+                        plt_title = f"{title} {ts_data['time'].cell(0).point.year} {USER_FRIENDLY_TS_NAMES[ts_type]} mean"
+
+                    plt.title(plt_title, fontsize=20)
+                    plots.append(iplt.pcolormesh(ts_data.cube, norm=norm, cmap=cmap))
+                    # qplt.pcolormesh(ts_data.cube)
+                    ax.add_feature(cf.COASTLINE, linewidth=0.75, color="black")
+                    ax.add_feature(cf.BORDERS, linewidth=0.75, color="black")
+                    if plot_grid:
+                        ax.gridlines(crs=crs_latlon, linestyle="-")
+                    ax.set_yticks(yticks)
+                    ax.set_yticklabels(ylabels)
+                    ax.set_xticks(xticks)
+                    ax.tick_params(
+                        labelsize=14,
+                    )
+                    ax.set_xticklabels(xlabels)
+                    # ax.set_yticks(np.arange(0, 100.1, 100/3))
+                    ax.set_xlabel("longitude", fontsize=20)
+
+                    ax.set_ylabel("latitude", fontsize=20)
                     print(f"saving file: {filename}")
                     plt.savefig(filename, dpi=self.DEFAULT_DPI)
                     plt.close()
@@ -53,12 +439,13 @@ class Plotting:
 
         # this will be a monthly plot for now
         # create monthly plot data
-        import iris.analysis.cartography
-        from pyaerocom.helpers import cftime_to_datetime64
-        import matplotlib.pyplot as plt
-        from matplotlib.ticker import FuncFormatter
-        from matplotlib.dates import MonthLocator, DateFormatter, YearLocator
         from datetime import datetime
+
+        import iris.analysis.cartography
+        import matplotlib.pyplot as plt
+        from matplotlib.dates import DateFormatter, MonthLocator, YearLocator
+        from matplotlib.ticker import FuncFormatter
+        from pyaerocom.units.datetime import cftime_to_datetime64
 
         mdata = {}
         ts_type = "monthly"
@@ -345,72 +732,177 @@ class Plotting:
         # plt.show()
         # print(_midx)
 
+    def plot_aeroval_overall_time_series(
+        self,
+        json_data: AerovalJsonData,
+        stat_prop: str = "data_mean",
+        title: str = None,
+    ):
+        """method to plot the time series plot from aeroval's overall evaluation"""
+        import matplotlib.pyplot as plt
+        import numpy as np
 
-def plot_aeroval_overall_time_series(
-    self,
-    json_data: AerovalJsonData,
-    stat_prop: str = "data_mean",
-    title: str = None,
-):
-    """method to plot the time series plot from aeroval's overall evaluation"""
-    import matplotlib.pyplot as plt
-    import numpy as np
+        # fig, ax = plt.subplots()
+        fig = plt.figure(figsize=(16, 9), layout="constrained")
+        ax = fig.add_subplot(1, 1, 1)
+        # ax = fig.add_axes([0.15, 0.15, 0.8, 0.75])
 
-    # fig, ax = plt.subplots()
-    fig = plt.figure(figsize=(16, 9), layout="constrained")
-    ax = fig.add_subplot(1, 1, 1)
-    # ax = fig.add_axes([0.15, 0.15, 0.8, 0.75])
-
-    plots = []
-    # [file][_var][_obsnetwork][_code][_model][_modelvar]
-    mdata = json_data.data[json_data.files[0]][json_data.vars[0]][
-        json_data.obsnetworks[0]
-    ][json_data.code[0]]
-    for _midx, _model in enumerate(json_data.models):
-        # does not work without the conversion to integer in between
-        ts = np.array(
-            list(mdata[_model][json_data.modelvars[0]][json_data.regions[0]]),
-            dtype=int,
-        ).astype("datetime64[ms]")
-        ts_keys = list(mdata[_model][json_data.modelvars[0]][json_data.regions[0]])
-        ts_vals = [
-            mdata[_model][json_data.modelvars[0]][json_data.regions[0]][x][stat_prop]
-            for x in ts_keys
-        ]
-        plots.append(ax.plot(ts, ts_vals, linewidth=2.0, label=_model))
-        # add reference data if the plot property is "data_mean"
-        if stat_prop == "data_mean":
-            # get color of last plot
-            last_color = plots[-1][0].get_color()
+        plots = []
+        # [file][_var][_obsnetwork][_code][_model][_modelvar]
+        mdata = json_data.data[json_data.files[0]][json_data.vars[0]][
+            json_data.obsnetworks[0]
+        ][json_data.code[0]]
+        for _midx, _model in enumerate(json_data.models):
+            # does not work without the conversion to integer in between
+            ts = np.array(
+                list(mdata[_model][json_data.modelvars[0]][json_data.regions[0]]),
+                dtype=int,
+            ).astype("datetime64[ms]")
+            ts_keys = list(mdata[_model][json_data.modelvars[0]][json_data.regions[0]])
             ts_vals = [
                 mdata[_model][json_data.modelvars[0]][json_data.regions[0]][x][
-                    "refdata_mean"
+                    stat_prop
                 ]
                 for x in ts_keys
             ]
+            plots.append(ax.plot(ts, ts_vals, linewidth=2.0, label=_model))
+            # add reference data if the plot property is "data_mean"
+            if stat_prop == "data_mean":
+                # get color of last plot
+                last_color = plots[-1][0].get_color()
+                ts_vals = [
+                    mdata[_model][json_data.modelvars[0]][json_data.regions[0]][x][
+                        "refdata_mean"
+                    ]
+                    for x in ts_keys
+                ]
+                plots.append(
+                    ax.plot(
+                        ts,
+                        ts_vals,
+                        linewidth=2.0,
+                        c=last_color,
+                        ls="dotted",
+                        label=f"ref {_model}",
+                    )
+                )
+
+        ax.legend()
+        plt.xlabel("time")
+        plt.ylabel(json_data.modelvars[0])
+        if title is None:
+            plt.title(json_data.regions[0])
+        else:
+            plt.title(title)
+
+        filename = f"{self._plotdir}/overallts_{json_data.vars[0]}_{stat_prop}_{json_data.obsnetworks[0]}_{json_data.code[0]}.png"
+        print(f"saving file: {filename}")
+        plt.savefig(filename, dpi=self.DEFAULT_DPI)
+        plt.close()
+        # plt.show()
+        # print(_midx)
+        pass
+
+    def plot_aeroval_evaluation_time_series(
+        self,
+        json_data: dict,
+        experiment_name: str = "Layer_Heights",
+        title: str = None,
+    ):
+        """method to plot the time series plot from aeroval's evaluation
+        lower left panel"""
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        for _midx, _model in enumerate(json_data):
+            # fig, ax = plt.subplots()
+            # fig = plt.figure(figsize=(16, 9), layout="constrained")
+            fig = plt.figure(
+                figsize=(16, 9),
+            )
+            ax = fig.add_subplot(1, 1, 1)
+            # ax = fig.add_axes([0.15, 0.15, 0.8, 0.75])
+
+            plots = []
+
+            # does not work without the conversion to integer in between
+            ts_daily = np.array(
+                list(json_data[_model]["daily_date"]),
+                dtype=int,
+            ).astype("datetime64[ms]")
+            ts_monthly = np.array(
+                list(json_data[_model]["monthly_date"]),
+                dtype=int,
+            ).astype("datetime64[ms]")
+            ts_yearly = np.array(
+                list(json_data[_model]["yearly_date"]),
+                dtype=int,
+            ).astype("datetime64[ms]")
+            ts_daily_vals = json_data[_model]["daily_mod"]
+            ts_monthly_vals = json_data[_model]["monthly_mod"]
+            ts_yearly_vals = json_data[_model]["yearly_mod"]
+            if _midx == 0:
+                # ts_keys = list(mdata[_model][json_data.modelvars[0]][json_data.regions[0]])
+                stat_name = json_data[_model]["station_name"]
+                var_name = json_data[_model]["mod_var"]
+                unit = json_data[_model]["mod_unit"]
+            try:
+                label = USER_FRIENDLY_MODEL_NAMES[_model]
+            except (NameError, KeyError):
+                label = _model
+            try:
+                color = USER_COLOURS[label]
+            except KeyError:
+                color = None
+
+            # plots.append(ax.plot(ts_daily, ts_daily_vals, linewidth=0.5, label="daily", color=color))
             plots.append(
                 ax.plot(
-                    ts,
-                    ts_vals,
+                    ts_monthly,
+                    ts_monthly_vals,
                     linewidth=2.0,
-                    c=last_color,
-                    ls="dotted",
-                    label=f"ref {_model}",
+                    label=None,
+                    color=color,
+                    linestyle="--",
+                )
+            )
+            plots.append(
+                ax.plot(
+                    ts_yearly,
+                    ts_yearly_vals,
+                    linewidth=3.0,
+                    label=label,
+                    color=color,
+                    marker="o",
                 )
             )
 
-    ax.legend()
-    plt.xlabel("time")
-    plt.ylabel(json_data.modelvars[0])
-    if title is None:
-        plt.title(json_data.regions[0])
-    else:
-        plt.title(title)
+            ax.legend(fontsize=18)
+            plt.xlabel("time", fontsize=20)
+            try:
+                plot_var_name = USER_FRIENDLY_VAR_NAMES[var_name]
+            except KeyError:
+                plot_var_name = var_name
 
-    filename = f"{self._plotdir}/overallts_{json_data.vars[0]}_{stat_prop}_{json_data.obsnetworks[0]}_{json_data.code[0]}.png"
-    print(f"saving file: {filename}")
-    plt.savefig(filename, dpi=self.DEFAULT_DPI)
-    plt.close()
-    # plt.show()
-    # print(_midx)
-    pass
+            plt.ylabel(f"{plot_var_name} [{unit}]", fontsize=20)
+            if title is None:
+                plt.title(f"{plot_var_name} - {stat_name} - 2005-2013", fontsize=20)
+            else:
+                plt.title(title, fontsize=20)
+
+            try:
+                ylim = USER_YLIM[var_name]
+                ax.set_ylim(ylim)
+            except KeyError:
+                pass
+
+            ax.tick_params(
+                labelsize=18,
+            )
+            filename = f"{self._plotdir}/evalts_{plot_var_name}_{stat_name}_{experiment_name}-{_model}.png"
+            print(f"saving file: {filename}")
+            plt.savefig(filename, dpi=self.DEFAULT_DPI)
+            plt.close()
+        # plt.show()
+        # print(_midx)
+        pass

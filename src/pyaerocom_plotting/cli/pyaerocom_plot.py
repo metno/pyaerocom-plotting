@@ -40,7 +40,12 @@ def main():
 """,
     )
     parser.add_argument("-m", "--models", help="models(s) to read", nargs="+")
+    parser.add_argument("-t", "--title", help="plot title", nargs="+")
     parser.add_argument("-p", "--plottype", help="plot type(s) to plot", nargs="+")
+    parser.add_argument(
+        "--varscalefile",
+        help="user defined variable scale file",
+    )
     parser.add_argument(
         "-l", "--list", help="list supported plot types", action="store_true"
     )
@@ -72,6 +77,14 @@ def main():
 
     if args.outdir:
         options["outdir"] = args.outdir
+
+    if args.varscalefile:
+        options["varscalefile"] = args.varscalefile
+
+    if args.title:
+        options["plottitle"] = " ".join(args.title)
+    else:
+        options["plottitle"] = None
 
     if args.plottype:
         options["plottype"] = args.plottype
@@ -111,11 +124,16 @@ def main():
     # start plotting by loop through the supplied plot types
     # OBS: depending on the plottype the corresponding reading class has to be called
     # e.g. pya_read for reading model data via pyaerocom
+    if "varscalefile" in options:
+        var_scale_file = options["varscalefile"]
+    else:
+        var_scale_file = None
+
     for _pidx, _ptype in enumerate(options["plottype"]):
         if _ptype == "pixelmap":
             model_data = pya_read(options=options)
-            plt_obj = Plotting(plotdir=options["outdir"])
-            plt_obj.plot_pixel_map(model_data)
+            plt_obj = Plotting(plotdir=options["outdir"], var_scale_file=var_scale_file)
+            plt_obj.plot_pixel_map(model_data, title=options["plottitle"])
         elif _ptype == "monthly_weighted_mean":
             model_data = pya_read(options=options)
             plt_obj = Plotting(plotdir=options["outdir"])
